@@ -1,0 +1,160 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Passion Fruits Chatbot Custom Styles */
+
+/* All buttons have white text - strongest rule */
+button,
+input[type="submit"],
+input[type="button"],
+a.btn,
+.btn {
+    color: white !important;
+}
+
+/* Force white text on all button content */
+button *,
+input[type="submit"] *,
+input[type="button"] *,
+a.btn *,
+.btn * {
+    color: white !important;
+}
+
+/* Purple buttons have white text - stronger rule */
+button.bg-primary-600,
+button.bg-primary-700,
+button.bg-primary-500,
+a.bg-primary-600,
+a.bg-primary-700,
+a.bg-primary-500,
+.bg-primary-600,
+.bg-primary-700,
+.bg-primary-500 {
+    color: white !important;
+}
+
+/* Force white text on any purple button content */
+button.bg-primary-600 *,
+button.bg-primary-700 *,
+button.bg-primary-500 *,
+a.bg-primary-600 *,
+a.bg-primary-700 *,
+a.bg-primary-500 * {
+    color: white !important;
+}
+
+/* Green buttons also have white text */
+button.bg-green-600,
+button.bg-green-700,
+button.bg-green-500,
+a.bg-green-600,
+a.bg-green-700,
+a.bg-green-500,
+.bg-green-600,
+.bg-green-700,
+.bg-green-500 {
+    color: white !important;
+}
+
+/* Gray/Blue buttons also have white text */
+button.bg-blue-600,
+button.bg-blue-700,
+button.bg-blue-500,
+button.bg-gray-600,
+button.bg-gray-700,
+button.bg-gray-500,
+a.bg-blue-600,
+a.bg-blue-700,
+a.bg-blue-500,
+a.bg-gray-600,
+a.bg-gray-700,
+a.bg-gray-500,
+.bg-blue-600,
+.bg-blue-700,
+.bg-blue-500,
+.bg-gray-600,
+.bg-gray-700,
+.bg-gray-500 {
+    color: white !important;
+}
+
+/* Red buttons also have white text */
+button.bg-red-600,
+button.bg-red-700,
+button.bg-red-500,
+a.bg-red-600,
+a.bg-red-700,
+a.bg-red-500,
+.bg-red-600,
+.bg-red-700,
+.bg-red-500 {
+    color: white !important;
+}
+
+/* Text in white cards is dark */
+.bg-white * {
+    color: #374151 !important;
+}
+
+/* Page titles are white */
+h1, h2, h3 {
+    color: white !important;
+}
+
+/* But headers in white cards are dark */
+.bg-white h1,
+.bg-white h2,
+.bg-white h3 {
+    color: #1f2937 !important;
+}
+
+/* Simple brand text - no gradient */
+nav h1 {
+    color: #a855f7 !important;
+}
+
+/* Purple form focus */
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: #a855f7;
+    box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1);
+}
+
+/* Specific button fixes for upload buttons - strongest rules */
+#uploadBtn, #uploadBtn *, 
+#urlBtn, #urlBtn *,
+#uploadBtnText, #urlBtnText,
+#uploadBtn span, #urlBtn span {
+    color: white !important;
+}
+
+/* Even more specific targeting */
+button#uploadBtn span#uploadBtnText,
+button#urlBtn span#urlBtnText {
+    color: white !important;
+}
+
+/* Chat widget styling */
+.rag-widget {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.rag-user-msg {
+    background: #a855f7 !important;
+    color: white !important;
+    align-self: flex-end !important;
+}
+
+.rag-bot-msg {
+    background: #f3f4f6 !important;
+    align-self: flex-start !important;
+}
+
+.rag-sources {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 4px;
+}

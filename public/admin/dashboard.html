@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot - Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <link href="/styles.css" rel="stylesheet">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <script>
+        // Configure Tailwind with Passion Fruits theme
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#faf5ff',
+                            100: '#f3e8ff',
+                            200: '#e9d5ff',
+                            300: '#d8b4fe',
+                            400: '#c084fc',
+                            500: '#a855f7',
+                            600: '#9333ea',
+                            700: '#7c3aed',
+                            800: '#6b21a8',
+                            900: '#581c87'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-900 min-h-screen">
+    <nav class="bg-gray-800 shadow-xl border-b border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <img src="/logo.png" alt="Passion Fruits" class="h-8 w-auto mr-3">
+                    <h1 class="text-xl font-bold text-primary-400">Chatbot</h1>
+                </div>
+                <button onclick="logout()" class="text-gray-400 hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="bg-white rounded-lg shadow-xl p-6">
+            <div class="flex space-x-4 mb-6">
+                <button onclick="showTab('settings')" id="settingsTab" 
+                    class="px-4 py-2 rounded-md bg-primary-600 text-white">Settings</button>
+                <button onclick="showTab('customers')" id="customersTab" 
+                    class="px-4 py-2 rounded-md bg-gray-700 text-white">Customers</button>
+                <button onclick="showTab('resources')" id="resourcesTab" 
+                    class="px-4 py-2 rounded-md bg-gray-700 text-white">Resources</button>
+                <button onclick="showTab('analytics')" id="analyticsTab" 
+                    class="px-4 py-2 rounded-md bg-gray-700 text-white">Analytics</button>
+                <button onclick="showTab('chat')" id="chatTab" 
+                    class="px-4 py-2 rounded-md bg-gray-700 text-white">Test Chat</button>
+            </div>
+
+            <div id="settingsContent">
+                <h2 class="text-lg font-semibold mb-6">API Configuration</h2>
+                
+                <div class="mb-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg" id="apiKeyWarning" style="display: none;">
+                    <p class="text-yellow-800">⚠️ OpenAI API key is not configured. Upload functionality will not work until you add a valid API key.</p>
+                </div>
+                
+                <div class="max-w-xl">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">OpenAI API Key</label>
+                    <div class="flex items-center space-x-2">
+                        <input type="password" id="apiKeyInput" placeholder="sk-..."
+                            class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <button onclick="toggleApiKeyVisibility()" 
+                            class="px-3 py-2 bg-gray-600 text-white border border-gray-500 rounded-md hover:bg-gray-700">
+                            <span id="visibilityIcon">👁️</span>
+                        </button>
+                        <button onclick="saveApiKey()" 
+                            class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700">Save</button>
+                    </div>
+                    <p class="mt-2 text-sm text-gray-600">Get your API key from <a href="https://platform.openai.com/account/api-keys" target="_blank" class="text-blue-600 hover:underline">OpenAI Platform</a></p>
+                    <div id="apiKeyStatus" class="mt-3 text-sm"></div>
+                </div>
+            </div>
+
+            <div id="customersContent" class="hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-lg font-semibold">Customer Overview</h2>
+                    <div class="flex space-x-2">
+                        <button onclick="loadCustomersOverview()" 
+                            class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700">
+                            Refresh
+                        </button>
+                        <button onclick="showAddCustomerModal()" 
+                            class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+                            Add Customer
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
+                        <div>
+                            <div class="text-2xl font-bold text-blue-600" id="totalCustomers">0</div>
+                            <div class="text-sm text-gray-600">Total Customers</div>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold text-green-600" id="totalResources">0</div>
+                            <div class="text-sm text-gray-600">Total Resources</div>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold text-purple-600" id="totalChunks">0</div>
+                            <div class="text-sm text-gray-600">Total Chunks</div>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold text-orange-600" id="overallCost">$0.00</div>
+                            <div class="text-sm text-gray-600">Total Cost</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="customersList" class="space-y-4">
+                    <!-- Customer cards will be inserted here -->
+                </div>
+            </div>
+
+            <div id="resourcesContent" class="hidden">
+                <div class="mb-6">
+                    <h2 class="text-lg font-semibold mb-4">Upload Resource</h2>
+                    
+                    <!-- File Upload Form -->
+                    <div class="mb-6 p-4 border border-gray-200 rounded-lg">
+                        <h3 class="font-medium mb-3">Upload File</h3>
+                        <form id="uploadForm" class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Customer ID</label>
+                                    <div class="relative">
+                                        <select name="customerId" id="uploadCustomerSelect" required
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500">
+                                            <option value="">Select or add customer...</option>
+                                        </select>
+                                        <input type="text" id="uploadCustomerInput" placeholder="Enter new customer ID" 
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 hidden">
+                                    </div>
+                                    <button type="button" onclick="toggleCustomerInput('upload')" 
+                                        class="mt-1 text-sm text-primary-600 hover:text-primary-700">+ Add new customer</button>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">File</label>
+                                    <input type="file" name="file" required accept=".pdf,.docx,.txt,.md"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                            </div>
+                            <button type="submit" id="uploadBtn"
+                                class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:bg-gray-400">
+                                <span id="uploadBtnText" class="text-white">Upload File</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- URL Upload Form -->
+                    <div class="mb-6 p-4 border border-gray-200 rounded-lg">
+                        <h3 class="font-medium mb-3">Upload from URL</h3>
+                        <form id="urlForm" class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Customer ID</label>
+                                    <div class="relative">
+                                        <select name="customerId" id="urlCustomerSelect" required
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500">
+                                            <option value="">Select or add customer...</option>
+                                        </select>
+                                        <input type="text" id="urlCustomerInput" placeholder="Enter new customer ID" 
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 hidden">
+                                    </div>
+                                    <button type="button" onclick="toggleCustomerInput('url')" 
+                                        class="mt-1 text-sm text-primary-600 hover:text-primary-700">+ Add new customer</button>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">URL</label>
+                                    <input type="url" name="url" required placeholder="https://en.wikipedia.org/wiki/..."
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                            </div>
+                            <button type="submit" id="urlBtn"
+                                class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400">
+                                <span id="urlBtnText" class="text-white">Scrape URL</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Progress Indicator -->
+                    <div id="progressContainer" class="mb-6 hidden">
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                                <div>
+                                    <div class="font-medium text-blue-800" id="progressTitle">Processing...</div>
+                                    <div class="text-sm text-blue-600" id="progressDetail">Initializing...</div>
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <div class="bg-blue-200 rounded-full h-2">
+                                    <div id="progressBar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                                </div>
+                                <div class="text-xs text-blue-600 mt-1" id="progressPercent">0%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h2 class="text-lg font-semibold mb-4">Resources</h2>
+                    <div class="mb-4">
+                        <input type="text" id="filterCustomerId" placeholder="Filter by Customer ID"
+                            class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <button onclick="loadResources()" 
+                            class="ml-2 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700">Filter</button>
+                    </div>
+                    <div id="resourcesList" class="space-y-2"></div>
+                </div>
+            </div>
+
+            <div id="analyticsContent" class="hidden">
+                <h2 class="text-lg font-semibold mb-6">Cost Analytics</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <h3 class="font-semibold text-blue-800">Total Cost</h3>
+                        <p class="text-2xl font-bold text-blue-600" id="totalCost">$0.00</p>
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <h3 class="font-semibold text-green-800">This Month</h3>
+                        <p class="text-2xl font-bold text-green-600" id="monthCost">$0.00</p>
+                    </div>
+                    <div class="bg-purple-50 p-4 rounded-lg">
+                        <h3 class="font-semibold text-purple-800">Total Requests</h3>
+                        <p class="text-2xl font-bold text-purple-600" id="totalRequests">0</p>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Filter by Customer</label>
+                    <select id="analyticsCustomer" onchange="loadAnalytics()" 
+                        class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">All Customers</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="font-semibold mb-4">Usage by Operation</h3>
+                        <div class="space-y-2" id="operationStats"></div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="font-semibold mb-4">Customer Summary</h3>
+                        <div class="space-y-2" id="customerStats"></div>
+                    </div>
+                </div>
+
+                <div class="mt-8">
+                    <h3 class="font-semibold mb-4">Daily Costs (Last 30 Days)</h3>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <div id="dailyCostChart" class="space-y-1"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="chatContent" class="hidden">
+                <h2 class="text-lg font-semibold mb-4">Test Chat</h2>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Customer ID</label>
+                    <select id="chatCustomerId" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500">
+                        <option value="">Select customer...</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                    <textarea id="chatMessage" rows="3" placeholder="Ask a question..."
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+                <button onclick="sendChat()" 
+                    class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700">Send</button>
+                <div id="chatResponse" class="mt-6 p-4 bg-gray-50 rounded-md hidden">
+                    <h3 class="font-semibold mb-2">Response:</h3>
+                    <div id="chatResponseContent"></div>
+                    <div id="chatSources" class="mt-4 text-sm text-gray-600"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/admin/login.html';
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = '/admin/login.html';
+        }
+
+        function showTab(tab) {
+            const tabs = { settings: 'settingsTab', customers: 'customersTab', resources: 'resourcesTab', analytics: 'analyticsTab', chat: 'chatTab' };
+            const contents = { settings: 'settingsContent', customers: 'customersContent', resources: 'resourcesContent', analytics: 'analyticsContent', chat: 'chatContent' };
+            
+            Object.values(tabs).forEach(id => {
+                document.getElementById(id).classList.remove('bg-primary-600');
+                document.getElementById(id).classList.add('bg-gray-700', 'text-white');
+            });
+            
+            Object.values(contents).forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            
+            document.getElementById(tabs[tab]).classList.remove('bg-gray-700');
+            document.getElementById(tabs[tab]).classList.add('bg-primary-600', 'text-white');
+            document.getElementById(contents[tab]).classList.remove('hidden');
+            
+            // Load customer dropdown when switching to chat tab
+            if (tab === 'chat') {
+                loadCustomerDropdowns();
+            }
+        }
+
+        async function apiCall(url, options = {}) {
+            return fetch(url, {
+                ...options,
+                headers: {
+                    ...options.headers,
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+        }
+
+        function showProgress(title, detail, percent = 0) {
+            const container = document.getElementById('progressContainer');
+            const titleEl = document.getElementById('progressTitle');
+            const detailEl = document.getElementById('progressDetail');
+            const barEl = document.getElementById('progressBar');
+            const percentEl = document.getElementById('progressPercent');
+            
+            titleEl.textContent = title;
+            detailEl.textContent = detail;
+            barEl.style.width = percent + '%';
+            percentEl.textContent = percent + '%';
+            container.classList.remove('hidden');
+        }
+        
+        function hideProgress() {
+            document.getElementById('progressContainer').classList.add('hidden');
+        }
+        
+        function setButtonLoading(buttonId, textId, loading, loadingText = 'Processing...') {
+            const btn = document.getElementById(buttonId);
+            const text = document.getElementById(textId);
+            btn.disabled = loading;
+            text.textContent = loading ? loadingText : (buttonId === 'uploadBtn' ? 'Upload File' : 'Scrape URL');
+        }
+
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            
+            // Get customer ID from dropdown or input
+            const customerId = getCustomerId('upload');
+            if (!customerId) {
+                alert('Please select or enter a customer ID');
+                return;
+            }
+            
+            // Update form data with customer ID
+            formData.set('customerId', customerId);
+            
+            try {
+                setButtonLoading('uploadBtn', 'uploadBtnText', true, 'Uploading...');
+                showProgress('Uploading File', 'Preparing file for upload...', 10);
+                
+                const response = await apiCall('/api/resources/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                showProgress('Processing File', 'Extracting text and creating embeddings...', 50);
+                
+                if (response.ok) {
+                    showProgress('Finalizing', 'Saving to database...', 90);
+                    const result = await response.json();
+                    
+                    showProgress('Complete!', `Uploaded ${result.fileName} with ${result.chunks} chunks`, 100);
+                    
+                    setTimeout(() => {
+                        hideProgress();
+                        alert(`Successfully uploaded ${result.fileName} with ${result.chunks} chunks`);
+                        e.target.reset();
+                        loadResources();
+                    }, 2000);
+                } else {
+                    hideProgress();
+                    alert('Upload failed');
+                }
+            } catch (err) {
+                hideProgress();
+                alert('Upload error: ' + err.message);
+            } finally {
+                setButtonLoading('uploadBtn', 'uploadBtnText', false);
+            }
+        });
+
+        document.getElementById('urlForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            
+            // Get customer ID from dropdown or input
+            const customerId = getCustomerId('url');
+            if (!customerId) {
+                alert('Please select or enter a customer ID');
+                return;
+            }
+            
+            try {
+                setButtonLoading('urlBtn', 'urlBtnText', true, 'Scraping...');
+                showProgress('Scraping URL', 'Fetching content from webpage...', 10);
+                
+                const response = await apiCall('/api/resources/upload-url', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        customerId: customerId,
+                        url: formData.get('url')
+                    })
+                });
+                
+                showProgress('Processing Content', 'Extracting text and creating embeddings...', 50);
+                
+                if (response.ok) {
+                    showProgress('Finalizing', 'Saving to database...', 90);
+                    const result = await response.json();
+                    
+                    showProgress('Complete!', `Scraped content with ${result.chunks} chunks`, 100);
+                    
+                    setTimeout(() => {
+                        hideProgress();
+                        alert(`Successfully scraped URL with ${result.chunks} chunks`);
+                        e.target.reset();
+                        loadResources();
+                    }, 2000);
+                } else {
+                    hideProgress();
+                    const error = await response.json();
+                    alert('URL scraping failed: ' + error.error);
+                }
+            } catch (err) {
+                hideProgress();
+                alert('URL scraping error: ' + err.message);
+            } finally {
+                setButtonLoading('urlBtn', 'urlBtnText', false);
+            }
+        });
+
+        async function loadResources() {
+            const customerId = document.getElementById('filterCustomerId').value;
+            if (!customerId) return;
+            
+            try {
+                const response = await apiCall(`/api/resources/list/${customerId}`);
+                const resources = await response.json();
+                
+                const list = document.getElementById('resourcesList');
+                list.innerHTML = resources.map(r => `
+                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded">
+                        <div>
+                            <div class="font-medium">${r.fileName}</div>
+                            <div class="text-sm text-gray-600">${r.chunkCount} chunks • ${new Date(r.uploadedAt).toLocaleString()}</div>
+                        </div>
+                        <button onclick="deleteResource(${r.id})" 
+                            class="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700">Delete</button>
+                    </div>
+                `).join('');
+            } catch (err) {
+                alert('Failed to load resources');
+            }
+        }
+
+        async function deleteResource(id) {
+            if (!confirm('Delete this resource?')) return;
+            
+            try {
+                const response = await apiCall(`/api/resources/${id}`, { method: 'DELETE' });
+                if (response.ok) {
+                    loadResources();
+                }
+            } catch (err) {
+                alert('Delete failed');
+            }
+        }
+
+        async function sendChat() {
+            console.log('sendChat called');
+            const customerId = document.getElementById('chatCustomerId').value;
+            const message = document.getElementById('chatMessage').value;
+            
+            console.log('Customer ID:', customerId, 'Message:', message);
+            if (!customerId || !message) {
+                console.log('Missing customerId or message');
+                return;
+            }
+            
+            const responseDiv = document.getElementById('chatResponse');
+            const contentDiv = document.getElementById('chatResponseContent');
+            const sourcesDiv = document.getElementById('chatSources');
+            
+            responseDiv.classList.remove('hidden');
+            contentDiv.innerHTML = '';
+            sourcesDiv.innerHTML = '';
+            
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ customerId, message })
+                });
+                
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    
+                    const text = decoder.decode(value);
+                    const lines = text.split('\n');
+                    
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            try {
+                                const data = JSON.parse(line.slice(6));
+                                if (data.content) {
+                                    contentDiv.innerHTML += data.content;
+                                }
+                                if (data.sources) {
+                                // Don't deduplicate by filename - show all chunks since they contain different content
+                                const allSources = data.sources;
+                                
+                                sourcesDiv.innerHTML = '<div class="font-semibold mb-2">Sources (showing all ' + allSources.length + ' retrieved chunks):</div>' + 
+                                    allSources.map((source, index) => `
+                                        <div class="mb-2">
+                                            <button onclick="toggleSourcePreview(${index})" 
+                                                class="text-primary-600 hover:text-primary-700 hover:underline cursor-pointer">
+                                                📄 ${source.fileName}
+                                            </button>
+                                            <div id="sourcePreview-${index}" class="hidden mt-2 p-3 bg-gray-100 rounded text-sm border-l-4 border-primary-500">
+                                                <div class="text-gray-600 mb-1">Relevant excerpt:</div>
+                                                <div class="text-gray-800">${findMostRelevantExcerpt(source.text, message, 300)}</div>
+                                                <details class="mt-2">
+                                                    <summary class="text-xs text-gray-500 cursor-pointer">▼ Expand</summary>
+                                                    <div class="text-xs text-gray-600 mt-1 max-h-32 overflow-y-auto">${source.text.substring(0, 1000).replace(/</g, '&lt;').replace(/>/g, '&gt;')}${source.text.length > 1000 ? '...' : ''}</div>
+                                                </details>
+                                            </div>
+                                        </div>
+                                    `).join('');
+                                
+                                // Store sources globally for toggle function
+                                window.currentSources = allSources;
+                            }
+                            } catch (parseErr) {
+                                console.error('JSON parse error:', parseErr);
+                            }
+                        }
+                    }
+                }
+            } catch (err) {
+                contentDiv.innerHTML = 'Chat error';
+            }
+        }
+
+        function findMostRelevantExcerpt(text, query, maxLength = 300) {
+            const lowerText = text.toLowerCase();
+            const lowerQuery = query.toLowerCase();
+            
+            // First, try to find exact phrase matches
+            const exactPhraseMatch = lowerText.indexOf(lowerQuery);
+            if (exactPhraseMatch !== -1) {
+                return extractAroundPosition(text, exactPhraseMatch, maxLength);
+            }
+            
+            // Try to find key phrases from the query
+            const keyPhrases = extractKeyPhrases(query);
+            for (const phrase of keyPhrases) {
+                const phraseMatch = lowerText.indexOf(phrase.toLowerCase());
+                if (phraseMatch !== -1) {
+                    return extractAroundPosition(text, phraseMatch, maxLength);
+                }
+            }
+            
+            // Fall back to individual word matching
+            const stopWords = new Set(['what', 'is', 'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'how', 'why', 'where', 'when', 'who']);
+            const queryTerms = lowerQuery
+                .replace(/[^\w\s]/g, ' ')
+                .split(/\s+/)
+                .filter(term => term.length > 2 && !stopWords.has(term));
+            
+            if (queryTerms.length === 0) {
+                return text.substring(0, maxLength) + (text.length > maxLength ? '...' : '');
+            }
+            
+            let bestStart = 0;
+            let bestScore = 0;
+            
+            // Try different starting positions
+            for (let start = 0; start <= text.length - 50; start += 30) {
+                let end = Math.min(start + maxLength, text.length);
+                let substring = text.substring(start, end).toLowerCase();
+                let score = 0;
+                
+                queryTerms.forEach(term => {
+                    const matches = (substring.match(new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length;
+                    score += matches * term.length;
+                });
+                
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestStart = start;
+                }
+            }
+            
+            if (bestScore === 0) {
+                return text.substring(0, maxLength) + (text.length > maxLength ? '...' : '');
+            }
+            
+            return extractAroundPosition(text, bestStart, maxLength);
+        }
+        
+        function extractKeyPhrases(query) {
+            // Extract meaningful phrases (2+ words) from the query
+            const words = query.toLowerCase().replace(/[^\w\s]/g, ' ').split(/\s+/);
+            const phrases = [];
+            
+            // Get 2-word combinations
+            for (let i = 0; i < words.length - 1; i++) {
+                if (words[i].length > 2 && words[i+1].length > 2) {
+                    phrases.push(words[i] + ' ' + words[i+1]);
+                }
+            }
+            
+            // Get 3-word combinations
+            for (let i = 0; i < words.length - 2; i++) {
+                if (words[i].length > 1 && words[i+1].length > 1 && words[i+2].length > 1) {
+                    phrases.push(words[i] + ' ' + words[i+1] + ' ' + words[i+2]);
+                }
+            }
+            
+            return phrases.sort((a, b) => b.length - a.length); // Longer phrases first
+        }
+        
+        function extractAroundPosition(text, position, maxLength) {
+            // Start a bit before the match to provide context
+            let start = Math.max(0, position - 50);
+            let end = Math.min(text.length, start + maxLength);
+            
+            // Adjust start if we're too close to the end
+            if (end - start < maxLength && start > 0) {
+                start = Math.max(0, end - maxLength);
+            }
+            
+            let excerpt = text.substring(start, end);
+            
+            // Try to start at a sentence beginning
+            if (start > 0) {
+                const sentenceStart = excerpt.search(/[.!?]\s+[A-Z]/);
+                if (sentenceStart !== -1 && sentenceStart < excerpt.length / 3) {
+                    excerpt = excerpt.substring(sentenceStart + 2);
+                }
+            }
+            
+            // Try to end at a sentence boundary
+            const lastSentenceEnd = excerpt.lastIndexOf('. ');
+            if (lastSentenceEnd > excerpt.length * 0.6) {
+                excerpt = excerpt.substring(0, lastSentenceEnd + 1);
+            }
+            
+            // Add ellipsis if needed
+            const needsStartEllipsis = start > 0 && !excerpt.match(/^[A-Z]/);
+            const needsEndEllipsis = end < text.length && !excerpt.endsWith('.');
+            
+            if (needsStartEllipsis) excerpt = '...' + excerpt;
+            if (needsEndEllipsis) excerpt = excerpt + '...';
+            
+            return excerpt;
+        }
+
+        function toggleSourcePreview(index) {
+            const preview = document.getElementById(`sourcePreview-${index}`);
+            if (preview) {
+                preview.classList.toggle('hidden');
+            }
+        }
+
+        let apiKeyVisible = false;
+        
+        function toggleApiKeyVisibility() {
+            const input = document.getElementById('apiKeyInput');
+            const icon = document.getElementById('visibilityIcon');
+            apiKeyVisible = !apiKeyVisible;
+            input.type = apiKeyVisible ? 'text' : 'password';
+            icon.textContent = apiKeyVisible ? '🙈' : '👁️';
+        }
+        
+        async function checkApiKey() {
+            try {
+                const response = await apiCall('/api/config/api-key');
+                const data = await response.json();
+                
+                const warning = document.getElementById('apiKeyWarning');
+                const status = document.getElementById('apiKeyStatus');
+                
+                if (data.hasKey) {
+                    warning.style.display = 'none';
+                    status.innerHTML = `<span class="text-green-600">✓ API key configured: ${data.masked}</span>`;
+                } else {
+                    warning.style.display = 'block';
+                    status.innerHTML = '<span class="text-red-600">✗ No API key configured</span>';
+                }
+            } catch (err) {
+                console.error('Failed to check API key:', err);
+            }
+        }
+        
+        async function saveApiKey() {
+            const apiKey = document.getElementById('apiKeyInput').value.trim();
+            
+            if (!apiKey) {
+                alert('Please enter an API key');
+                return;
+            }
+            
+            if (!apiKey.startsWith('sk-')) {
+                alert('Invalid API key format. OpenAI API keys start with "sk-"');
+                return;
+            }
+            
+            try {
+                const response = await apiCall('/api/config/api-key', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ apiKey })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    alert(result.message);
+                    document.getElementById('apiKeyInput').value = '';
+                    
+                    // Wait for server restart and then check API key status
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 3000);
+                } else {
+                    const error = await response.json();
+                    alert('Failed to save API key: ' + error.error);
+                }
+            } catch (err) {
+                alert('Error saving API key');
+            }
+        }
+        
+        async function loadAnalytics() {
+            const customerId = document.getElementById('analyticsCustomer').value;
+            
+            try {
+                // Load usage statistics
+                const response = await apiCall(`/api/analytics/usage${customerId ? '/' + customerId : ''}`);
+                const data = await response.json();
+                
+                // Update summary cards
+                document.getElementById('totalCost').textContent = '$' + data.totalCost.toFixed(4);
+                
+                const monthCost = data.dailyCosts
+                    .filter(d => new Date(d.date) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000))
+                    .reduce((sum, d) => sum + d.dailyCost, 0);
+                document.getElementById('monthCost').textContent = '$' + monthCost.toFixed(4);
+                
+                const totalRequests = data.stats.reduce((sum, s) => sum + s.requests, 0);
+                document.getElementById('totalRequests').textContent = totalRequests.toString();
+                
+                // Update operation stats
+                const operationDiv = document.getElementById('operationStats');
+                operationDiv.innerHTML = data.stats.map(stat => `
+                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded">
+                        <div>
+                            <div class="font-medium">${stat.operation} (${stat.model})</div>
+                            <div class="text-sm text-gray-600">${stat.requests} requests • ${stat.totalInputTokens.toLocaleString()} input tokens</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-semibold">$${stat.totalCost.toFixed(4)}</div>
+                            <div class="text-sm text-gray-600">${stat.totalOutputTokens.toLocaleString()} output</div>
+                        </div>
+                    </div>
+                `).join('');
+                
+                // Update daily cost chart
+                const chartDiv = document.getElementById('dailyCostChart');
+                const maxCost = Math.max(...data.dailyCosts.map(d => d.dailyCost));
+                chartDiv.innerHTML = data.dailyCosts.slice(-15).map(day => {
+                    const width = maxCost > 0 ? (day.dailyCost / maxCost) * 100 : 0;
+                    return `
+                        <div class="flex items-center space-x-2">
+                            <div class="w-20 text-sm">${new Date(day.date).toLocaleDateString()}</div>
+                            <div class="flex-1 bg-gray-200 rounded-full h-4">
+                                <div class="bg-blue-500 h-4 rounded-full" style="width: ${width}%"></div>
+                            </div>
+                            <div class="w-16 text-right text-sm">$${day.dailyCost.toFixed(4)}</div>
+                        </div>
+                    `;
+                }).join('');
+                
+            } catch (err) {
+                console.error('Failed to load analytics:', err);
+            }
+        }
+        
+        async function loadCustomers() {
+            try {
+                const response = await apiCall('/api/analytics/customers');
+                const customers = await response.json();
+                
+                const select = document.getElementById('analyticsCustomer');
+                select.innerHTML = '<option value="">All Customers</option>' + 
+                    customers.map(c => `<option value="${c.customerId}">${c.customerId}</option>`).join('');
+                
+                const customerDiv = document.getElementById('customerStats');
+                customerDiv.innerHTML = customers.map(customer => `
+                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded">
+                        <div>
+                            <div class="font-medium">${customer.customerId}</div>
+                            <div class="text-sm text-gray-600">${customer.totalRequests} requests • Last: ${new Date(customer.lastActivity).toLocaleDateString()}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-semibold">$${customer.totalCost.toFixed(4)}</div>
+                            <div class="text-sm text-gray-600">${customer.totalInputTokens.toLocaleString()} tokens</div>
+                        </div>
+                    </div>
+                `).join('');
+                
+            } catch (err) {
+                console.error('Failed to load customers:', err);
+            }
+        }
+
+        // Customer dropdown functionality
+        let customers = [];
+        
+        async function loadCustomerDropdowns() {
+            try {
+                const response = await apiCall('/api/customers/overview');
+                if (response.ok) {
+                    const data = await response.json();
+                    customers = data.customers.map(c => c.customerId);
+                    updateCustomerDropdowns();
+                }
+            } catch (err) {
+                console.error('Failed to load customers for dropdowns:', err);
+            }
+        }
+        
+        function updateCustomerDropdowns() {
+            const selects = ['uploadCustomerSelect', 'urlCustomerSelect', 'analyticsCustomer', 'chatCustomerId'];
+            
+            selects.forEach(selectId => {
+                const select = document.getElementById(selectId);
+                if (select) {
+                    const currentValue = select.value;
+                    let baseOptions;
+                    if (selectId === 'analyticsCustomer') {
+                        baseOptions = '<option value="">All Customers</option>';
+                    } else if (selectId === 'chatCustomerId') {
+                        baseOptions = '<option value="">Select customer...</option>';
+                    } else {
+                        baseOptions = '<option value="">Select or add customer...</option>';
+                    }
+                    
+                    select.innerHTML = baseOptions + customers.map(customer => 
+                        `<option value="${customer}">${customer}</option>`
+                    ).join('');
+                    
+                    if (customers.includes(currentValue)) {
+                        select.value = currentValue;
+                    }
+                }
+            });
+        }
+        
+        function toggleCustomerInput(type) {
+            const select = document.getElementById(`${type}CustomerSelect`);
+            const input = document.getElementById(`${type}CustomerInput`);
+            const button = event.target;
+            
+            if (select.classList.contains('hidden')) {
+                // Switch back to dropdown
+                select.classList.remove('hidden');
+                input.classList.add('hidden');
+                button.textContent = '+ Add new customer';
+                select.required = true;
+                input.required = false;
+            } else {
+                // Switch to input
+                select.classList.add('hidden');
+                input.classList.remove('hidden');
+                button.textContent = '← Back to list';
+                select.required = false;
+                input.required = true;
+                input.focus();
+            }
+        }
+        
+        function getCustomerId(type) {
+            const select = document.getElementById(`${type}CustomerSelect`);
+            const input = document.getElementById(`${type}CustomerInput`);
+            
+            if (!select.classList.contains('hidden')) {
+                return select.value;
+            } else {
+                const newCustomerId = input.value.trim();
+                if (newCustomerId && !customers.includes(newCustomerId)) {
+                    customers.push(newCustomerId);
+                    updateCustomerDropdowns();
+                }
+                return newCustomerId;
+            }
+        }
+
+        // Check API key status on load
+        checkApiKey();
+        
+        async function loadCustomersOverview() {
+            try {
+                console.log('Loading customers overview...');
+                const response = await apiCall('/api/customers/overview');
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('API Error:', response.status, errorText);
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+                
+                const data = await response.json();
+                
+                // Update totals
+                document.getElementById('totalCustomers').textContent = data.totals.totalCustomers;
+                document.getElementById('totalResources').textContent = data.totals.totalResources;
+                document.getElementById('totalChunks').textContent = data.totals.totalChunks.toLocaleString();
+                document.getElementById('overallCost').textContent = '$' + data.totals.totalCost.toFixed(4);
+                
+                // Update customer list
+                const customersList = document.getElementById('customersList');
+                customersList.innerHTML = data.customers.map(customer => {
+                    const lastUpload = new Date(customer.lastUpload).toLocaleDateString();
+                    const firstUpload = new Date(customer.firstUpload).toLocaleDateString();
+                    
+                    return `
+                        <div class="border border-gray-200 rounded-lg">
+                            <div class="p-4 bg-gray-50 flex justify-between items-center cursor-pointer" 
+                                 onclick="toggleCustomerResources('${customer.customerId}')">
+                                <div class="flex-1">
+                                    <div class="flex items-center space-x-4">
+                                        <div>
+                                            <h3 class="font-semibold text-lg">${customer.customerId}</h3>
+                                            <p class="text-sm text-gray-600">
+                                                ${customer.resourceCount} resources • ${customer.chunkCount.toLocaleString()} chunks • $${customer.totalCost.toFixed(4)} cost
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-sm text-gray-600">
+                                        First: ${firstUpload}<br>
+                                        Last: ${lastUpload}
+                                    </div>
+                                </div>
+                                <div class="ml-4 flex items-center space-x-2">
+                                    <button onclick="event.stopPropagation(); deleteCustomer('${customer.customerId}')" 
+                                        class="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700">
+                                        Delete All
+                                    </button>
+                                    <svg class="w-5 h-5 transform transition-transform" id="chevron-${customer.customerId}" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            
+                            <div id="resources-${customer.customerId}" class="hidden border-t border-gray-200">
+                                <div class="p-4 space-y-3">
+                                    ${customer.resources.map(resource => `
+                                        <div class="flex justify-between items-center p-3 bg-white border border-gray-100 rounded">
+                                            <div class="flex-1">
+                                                <div class="font-medium">${resource.fileName}</div>
+                                                <div class="text-sm text-gray-600">
+                                                    ${resource.mime} • ${resource.chunkCount} chunks • ${new Date(resource.uploadedAt).toLocaleDateString()}
+                                                </div>
+                                            </div>
+                                            <button onclick="deleteResource(${resource.id})" 
+                                                class="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700">
+                                                Delete
+                                            </button>
+                                        </div>
+                                    `).join('')}
+                                    ${customer.resources.length === 0 ? '<p class="text-gray-500 text-center py-4">No resources found</p>' : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+            } catch (err) {
+                console.error('Failed to load customers overview:', err);
+                alert('Failed to load customers overview');
+            }
+        }
+        
+        function toggleCustomerResources(customerId) {
+            const resourcesDiv = document.getElementById(`resources-${customerId}`);
+            const chevron = document.getElementById(`chevron-${customerId}`);
+            
+            if (resourcesDiv.classList.contains('hidden')) {
+                resourcesDiv.classList.remove('hidden');
+                chevron.style.transform = 'rotate(180deg)';
+            } else {
+                resourcesDiv.classList.add('hidden');
+                chevron.style.transform = 'rotate(0deg)';
+            }
+        }
+        
+        async function deleteCustomer(customerId) {
+            if (!confirm(`Are you sure you want to delete ALL data for customer "${customerId}"?\n\nThis will permanently delete:\n- All resources\n- All chunks\n- All usage tracking data\n\nThis action cannot be undone.`)) {
+                return;
+            }
+            
+            try {
+                const response = await apiCall(`/api/customers/${customerId}`, { method: 'DELETE' });
+                if (response.ok) {
+                    alert(`Successfully deleted all data for customer: ${customerId}`);
+                    loadCustomersOverview();
+                } else {
+                    const error = await response.json();
+                    alert('Delete failed: ' + error.error);
+                }
+            } catch (err) {
+                alert('Delete error: ' + err.message);
+            }
+        }
+
+        // Load analytics data
+        loadCustomers();
+        loadAnalytics();
+        
+        // Load customers overview and dropdowns
+        loadCustomersOverview();
+        loadCustomerDropdowns();
+        
+        // Simple add customer function
+        function showAddCustomerModal() {
+            const customerId = prompt('Enter new customer ID:');
+            if (customerId && customerId.trim()) {
+                const cleanId = customerId.trim();
+                if (!customers.includes(cleanId)) {
+                    customers.push(cleanId);
+                    updateCustomerDropdowns();
+                    alert(`Customer "${cleanId}" added successfully!`);
+                } else {
+                    alert('Customer already exists!');
+                }
+            }
+        }
+    </script>
+</body>
+</html>
