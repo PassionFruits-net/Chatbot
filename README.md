@@ -323,4 +323,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Built with 🫐 by Passion Fruits** | [Website](https://passionfruits.net) | [Demo](https://demo.passionfruits.net)
+**Built with 🫐 by Passion Fruits** | [Demo](https://chat.passionfruits.net)
