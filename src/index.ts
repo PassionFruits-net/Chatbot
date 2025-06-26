@@ -28,7 +28,7 @@ app.get('/admin', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🍓 Chatbot running on http://localhost:${PORT}`);
+  console.log(`🫐 Chatbot running on http://localhost:${PORT}`);
   console.log(`📊 Admin UI: http://localhost:${PORT}/admin`);
   console.log(`💬 Widget script: <script src="http://localhost:${PORT}/widget.js" data-customer="your-customer-id"></script>`);
 });
