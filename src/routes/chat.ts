@@ -6,13 +6,15 @@ const router = Router();
 
 router.post('/chat', async (req: Request, res: Response) => {
   try {
-    const { customerId, message } = req.body;
+    const { customerId, message, includeGeneralAI } = req.body;
 
     if (!customerId || !message) {
       return res.status(400).json({ error: 'customerId and message are required' });
     }
 
     const chunks = await retrieveChunks(customerId, message);
+    
+    console.log(`General AI mode: ${includeGeneralAI ? 'enabled' : 'disabled'}`);
     
     // Debug logging
     console.log(`\n=== RETRIEVAL DEBUG for "${message}" ===`);
@@ -28,16 +30,20 @@ router.post('/chat', async (req: Request, res: Response) => {
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
 
-    for await (const chunk of streamChat({ customerId, message, chunks })) {
+    for await (const chunk of streamChat({ customerId, message, chunks, includeGeneralAI })) {
       res.write(`data: ${JSON.stringify({ content: chunk })}\n\n`);
     }
 
+    // Return document sources for response
+    const allSources = chunks.map(c => ({ 
+      type: 'document',
+      fileName: c.fileName, 
+      text: c.text 
+    }));
+
     res.write(`data: ${JSON.stringify({ 
       done: true, 
-      sources: chunks.map(c => ({ 
-        fileName: c.fileName, 
-        text: c.text 
-      })) 
+      sources: allSources
     })}\n\n`);
     res.end();
   } catch (error) {

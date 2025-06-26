@@ -13,12 +13,17 @@ export interface ChatMessage {
   customerId: string;
   message: string;
   chunks: Array<{ text: string; fileName: string }>;
+  includeGeneralAI?: boolean;
 }
 
 export async function* streamChat(params: ChatMessage) {
-  const systemPrompt = `You are an assistant for CUSTOMER ${params.customerId}. Answer ONLY with the information inside <docs></docs>. If the answer isn't there, reply "I don't have that information". Do NOT include any citations or source references in your response - the sources will be shown separately.`;
+  const includeGeneralAI = params.includeGeneralAI || false;
   
-  const userPrompt = `${params.message}
+  const systemPrompt = includeGeneralAI 
+    ? `You are an assistant for CUSTOMER ${params.customerId}. You can use both the information from <docs></docs> (customer's documents) and your general knowledge to provide comprehensive answers. Prioritize customer documents when they contain relevant information, but supplement with your general knowledge when needed. Do NOT include citations in your response - the sources will be shown separately.`
+    : `You are an assistant for CUSTOMER ${params.customerId}. Answer ONLY with the information inside <docs></docs>. If the answer isn't there, reply "I don't have that information". Do NOT include any citations or source references in your response - the sources will be shown separately.`;
+  
+  let userPrompt = `${params.message}
 <docs>
 ${params.chunks.map(chunk => `[${chunk.fileName}]\n${chunk.text}`).join('\n\n')}
 </docs>`;

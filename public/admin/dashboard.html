@@ -285,12 +285,25 @@
                     <textarea id="chatMessage" rows="3" placeholder="Ask a question..."
                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
                 </div>
+                <div class="mb-4">
+                    <label class="flex items-center">
+                        <input type="checkbox" id="includeGeneralAI" class="mr-2 rounded border-gray-300 text-primary-600 focus:ring-primary-500">
+                        <span class="text-sm text-gray-700">Include general AI answers</span>
+                    </label>
+                    <p class="text-xs text-gray-500 mt-1">When enabled, the chatbot can use its general knowledge in addition to your uploaded documents to provide more comprehensive answers.</p>
+                </div>
                 <button onclick="sendChat()" 
                     class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700">Send</button>
                 <div id="chatResponse" class="mt-6 p-4 bg-gray-50 rounded-md hidden">
                     <h3 class="font-semibold mb-2">Response:</h3>
                     <div id="chatResponseContent"></div>
-                    <div id="chatSources" class="mt-4 text-sm text-gray-600"></div>
+                    <div id="sourcesSection" class="mt-4">
+                        <button id="sourcesToggle" onclick="toggleSources()" class="flex items-center text-sm font-medium text-gray-700 hover:text-gray-900 focus:outline-none">
+                            <span id="sourcesIcon" class="mr-1">▶</span>
+                            <span>Sources (<span id="sourcesCount">0</span>)</span>
+                        </button>
+                        <div id="chatSources" class="mt-2 text-sm text-gray-600 hidden"></div>
+                    </div>
                 </div>
             </div>
 
@@ -656,8 +669,9 @@
             console.log('sendChat called');
             const customerId = document.getElementById('chatCustomerId').value;
             const message = document.getElementById('chatMessage').value;
+            const includeGeneralAI = document.getElementById('includeGeneralAI').checked;
             
-            console.log('Customer ID:', customerId, 'Message:', message);
+            console.log('Customer ID:', customerId, 'Message:', message, 'Include general AI:', includeGeneralAI);
             if (!customerId || !message) {
                 console.log('Missing customerId or message');
                 return;
@@ -675,7 +689,7 @@
                 const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ customerId, message })
+                    body: JSON.stringify({ customerId, message, includeGeneralAI })
                 });
                 
                 const reader = response.body.getReader();
@@ -696,15 +710,24 @@
                                     contentDiv.innerHTML += data.content;
                                 }
                                 if (data.sources) {
-                                // Don't deduplicate by filename - show all chunks since they contain different content
+                                // Separate document and web sources
+                                const documentSources = data.sources.filter(s => s.type === 'document' || !s.type);
+                                const webSources = data.sources.filter(s => s.type === 'web');
                                 const allSources = data.sources;
                                 
-                                sourcesDiv.innerHTML = '<div class="font-semibold mb-2">Sources (showing all ' + allSources.length + ' retrieved chunks):</div>' + 
-                                    allSources.map((source, index) => `
-                                        <div class="mb-2">
+                                // Update sources count
+                                document.getElementById('sourcesCount').textContent = allSources.length;
+                                
+                                let sourcesHTML = '';
+                                
+                                // Document sources
+                                if (documentSources.length > 0) {
+                                    sourcesHTML += '<div class="mb-3"><div class="text-sm font-medium text-gray-700 mb-1">📄 Documents (' + documentSources.length + '):</div>';
+                                    sourcesHTML += documentSources.map((source, index) => `
+                                        <div class="mb-2 ml-2">
                                             <button onclick="toggleSourcePreview(${index})" 
                                                 class="text-primary-600 hover:text-primary-700 hover:underline cursor-pointer">
-                                                📄 ${source.fileName}
+                                                ${source.fileName}
                                             </button>
                                             <div id="sourcePreview-${index}" class="hidden mt-2 p-3 bg-gray-100 rounded text-sm border-l-4 border-primary-500">
                                                 <div class="text-gray-600 mb-1">Relevant excerpt:</div>
@@ -716,6 +739,32 @@
                                             </div>
                                         </div>
                                     `).join('');
+                                    sourcesHTML += '</div>';
+                                }
+                                
+                                // Web sources
+                                if (webSources.length > 0) {
+                                    sourcesHTML += '<div class="mb-3"><div class="text-sm font-medium text-gray-700 mb-1">🌐 Web Results (' + webSources.length + '):</div>';
+                                    sourcesHTML += webSources.map((source, index) => {
+                                        const webIndex = documentSources.length + index;
+                                        return `
+                                        <div class="mb-2 ml-2">
+                                            <button onclick="toggleSourcePreview(${webIndex})" 
+                                                class="text-blue-600 hover:text-blue-700 hover:underline cursor-pointer">
+                                                ${source.fileName}
+                                            </button>
+                                            ${source.url ? `<a href="${source.url}" target="_blank" class="text-xs text-gray-500 ml-2 hover:underline">🔗 Visit</a>` : ''}
+                                            <div id="sourcePreview-${webIndex}" class="hidden mt-2 p-3 bg-blue-50 rounded text-sm border-l-4 border-blue-500">
+                                                <div class="text-gray-600 mb-1">Web snippet:</div>
+                                                <div class="text-gray-800">${source.text.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+                                                ${source.url ? `<div class="text-xs text-blue-600 mt-2">Source: ${source.url}</div>` : ''}
+                                            </div>
+                                        </div>
+                                    `}).join('');
+                                    sourcesHTML += '</div>';
+                                }
+                                
+                                sourcesDiv.innerHTML = sourcesHTML;
                                 
                                 // Store sources globally for toggle function
                                 window.currentSources = allSources;
@@ -1090,7 +1139,7 @@
         checkApiKey();
         
         // Show customers tab by default
-        showTab('customers');
+        showTab('chat');
         
         async function loadCustomersOverview() {
             try {
@@ -1230,6 +1279,19 @@
                 } else {
                     alert('Customer already exists!');
                 }
+            }
+        }
+
+        function toggleSources() {
+            const sourcesDiv = document.getElementById('chatSources');
+            const icon = document.getElementById('sourcesIcon');
+            
+            if (sourcesDiv.classList.contains('hidden')) {
+                sourcesDiv.classList.remove('hidden');
+                icon.textContent = '▼';
+            } else {
+                sourcesDiv.classList.add('hidden');
+                icon.textContent = '▶';
             }
         }
     </script>
