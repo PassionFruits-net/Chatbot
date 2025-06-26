@@ -48,19 +48,21 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="bg-white rounded-lg shadow-xl p-6">
             <div class="flex space-x-4 mb-6">
-                <button onclick="showTab('settings')" id="settingsTab" 
-                    class="px-4 py-2 rounded-md bg-primary-600 text-white">Settings</button>
                 <button onclick="showTab('customers')" id="customersTab" 
-                    class="px-4 py-2 rounded-md bg-gray-700 text-white">Customers</button>
+                    class="px-4 py-2 rounded-md bg-primary-600 text-white">Customers</button>
                 <button onclick="showTab('resources')" id="resourcesTab" 
                     class="px-4 py-2 rounded-md bg-gray-700 text-white">Resources</button>
                 <button onclick="showTab('analytics')" id="analyticsTab" 
                     class="px-4 py-2 rounded-md bg-gray-700 text-white">Analytics</button>
                 <button onclick="showTab('chat')" id="chatTab" 
                     class="px-4 py-2 rounded-md bg-gray-700 text-white">Test Chat</button>
+                <button onclick="showTab('docs')" id="docsTab" 
+                    class="px-4 py-2 rounded-md bg-gray-700 text-white">Documentation</button>
+                <button onclick="showTab('settings')" id="settingsTab" 
+                    class="px-4 py-2 rounded-md bg-gray-700 text-white">Settings</button>
             </div>
 
-            <div id="settingsContent">
+            <div id="settingsContent" class="hidden">
                 <h2 class="text-lg font-semibold mb-6">API Configuration</h2>
                 
                 <div class="mb-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg" id="apiKeyWarning" style="display: none;">
@@ -84,7 +86,7 @@
                 </div>
             </div>
 
-            <div id="customersContent" class="hidden">
+            <div id="customersContent">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-lg font-semibold">Customer Overview</h2>
                     <div class="flex space-x-2">
@@ -291,6 +293,156 @@
                     <div id="chatSources" class="mt-4 text-sm text-gray-600"></div>
                 </div>
             </div>
+
+            <div id="docsContent" class="hidden">
+                <h2 class="text-lg font-semibold mb-6">Documentation</h2>
+                
+                <div class="space-y-8">
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold text-blue-800 mb-4">📋 Quick Setup Guide</h3>
+                        <ol class="list-decimal list-inside space-y-2 text-blue-700">
+                            <li>Configure your OpenAI API key in the Settings tab</li>
+                            <li>Create a customer ID for your website</li>
+                            <li>Upload documents or scrape web pages in the Resources tab</li>
+                            <li>Copy the widget code below and paste it into your website</li>
+                        </ol>
+                    </div>
+
+                    <div class="bg-white border border-gray-200 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold mb-4">🔧 Adding the Chat Widget to Your Website</h3>
+                        
+                        <p class="text-gray-700 mb-4">Add this code to your website's HTML, replacing <code class="bg-gray-100 px-2 py-1 rounded">YOUR_CUSTOMER_ID</code> with your actual customer ID:</p>
+                        
+                        <div class="bg-gray-900 p-4 rounded-lg overflow-x-auto">
+                            <pre class="text-white"><code class="text-white">&lt;!-- Passion Fruits Chatbot Widget --&gt;
+&lt;script 
+  src="https://chat.passionfruits.net/widget.js" 
+  data-customer="YOUR_CUSTOMER_ID"
+  defer
+&gt;&lt;/script&gt;</code></pre>
+                        </div>
+                        
+                        <div class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                            <p class="text-yellow-800 text-sm"><strong>💡 Tip:</strong> The widget will appear as a purple chat bubble in the bottom-right corner of your website.</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border border-gray-200 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold mb-4">⚙️ Widget Options</h3>
+                        
+                        <p class="text-gray-700 mb-4">You can customize the widget appearance and behavior with these optional attributes:</p>
+                        
+                        <div class="bg-gray-900 p-4 rounded-lg overflow-x-auto">
+                            <pre class="text-white"><code class="text-white">&lt;script 
+  src="https://chat.passionfruits.net/widget.js" 
+  data-customer="YOUR_CUSTOMER_ID"
+  data-position="bottom-left"
+  data-color="#9333ea"
+  data-greeting="Hi! How can I help you today?"
+  defer
+&gt;&lt;/script&gt;</code></pre>
+                        </div>
+                        
+                        <div class="mt-4 space-y-2">
+                            <div class="flex items-start space-x-3">
+                                <span class="font-mono text-sm bg-gray-100 px-2 py-1 rounded">data-position</span>
+                                <span class="text-sm text-gray-600">Position of chat bubble: <code>bottom-right</code> (default), <code>bottom-left</code>, <code>top-right</code>, <code>top-left</code></span>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <span class="font-mono text-sm bg-gray-100 px-2 py-1 rounded">data-color</span>
+                                <span class="text-sm text-gray-600">Custom color for the chat bubble (hex color code)</span>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <span class="font-mono text-sm bg-gray-100 px-2 py-1 rounded">data-greeting</span>
+                                <span class="text-sm text-gray-600">Custom greeting message when chat opens</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border border-gray-200 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold mb-4">🧪 Testing Your Integration</h3>
+                        
+                        <div class="space-y-3">
+                            <div class="flex items-start space-x-3">
+                                <span class="flex-shrink-0 w-6 h-6 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-sm font-bold">1</span>
+                                <p class="text-gray-700">After adding the script, refresh your webpage and look for the purple chat bubble</p>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <span class="flex-shrink-0 w-6 h-6 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-sm font-bold">2</span>
+                                <p class="text-gray-700">Click the bubble to open the chat interface</p>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <span class="flex-shrink-0 w-6 h-6 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-sm font-bold">3</span>
+                                <p class="text-gray-700">Test with questions related to your uploaded documents</p>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <span class="flex-shrink-0 w-6 h-6 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-sm font-bold">4</span>
+                                <p class="text-gray-700">Use the Test Chat tab in this admin panel to verify responses</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border border-gray-200 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold mb-4">🔍 Troubleshooting</h3>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <h4 class="font-semibold text-red-600 mb-2">Chat bubble doesn't appear</h4>
+                                <ul class="list-disc list-inside text-sm text-gray-600 space-y-1 ml-4">
+                                    <li>Check that the script URL is correct: <code>https://chat.passionfruits.net/widget.js</code></li>
+                                    <li>Verify your customer ID is correct</li>
+                                    <li>Check browser console for JavaScript errors</li>
+                                    <li>Ensure your website allows external scripts</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-red-600 mb-2">Chat opens but shows errors</h4>
+                                <ul class="list-disc list-inside text-sm text-gray-600 space-y-1 ml-4">
+                                    <li>Verify the customer ID exists and has uploaded documents</li>
+                                    <li>Check that the OpenAI API key is configured correctly</li>
+                                    <li>Test the customer ID in the Test Chat tab</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-red-600 mb-2">Responses are not relevant</h4>
+                                <ul class="list-disc list-inside text-sm text-gray-600 space-y-1 ml-4">
+                                    <li>Upload more relevant documents for your customer</li>
+                                    <li>Check document quality and content</li>
+                                    <li>Use the Analytics tab to monitor performance</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border border-gray-200 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold mb-4">📊 Best Practices</h3>
+                        
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div>
+                                <h4 class="font-medium text-green-600 mb-2">✅ Do</h4>
+                                <ul class="list-disc list-inside text-sm text-gray-600 space-y-1">
+                                    <li>Upload high-quality, relevant documents</li>
+                                    <li>Use clear, descriptive customer IDs</li>
+                                    <li>Test thoroughly before going live</li>
+                                    <li>Monitor usage and costs regularly</li>
+                                    <li>Keep documents updated</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-red-600 mb-2">❌ Don't</h4>
+                                <ul class="list-disc list-inside text-sm text-gray-600 space-y-1">
+                                    <li>Upload sensitive or confidential information</li>
+                                    <li>Use the same customer ID for different websites</li>
+                                    <li>Ignore cost monitoring</li>
+                                    <li>Upload irrelevant or low-quality content</li>
+                                    <li>Forget to test after making changes</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
         </div>
     </div>
 
@@ -306,8 +458,8 @@
         }
 
         function showTab(tab) {
-            const tabs = { settings: 'settingsTab', customers: 'customersTab', resources: 'resourcesTab', analytics: 'analyticsTab', chat: 'chatTab' };
-            const contents = { settings: 'settingsContent', customers: 'customersContent', resources: 'resourcesContent', analytics: 'analyticsContent', chat: 'chatContent' };
+            const tabs = { settings: 'settingsTab', customers: 'customersTab', resources: 'resourcesTab', analytics: 'analyticsTab', chat: 'chatTab', docs: 'docsTab' };
+            const contents = { settings: 'settingsContent', customers: 'customersContent', resources: 'resourcesContent', analytics: 'analyticsContent', chat: 'chatContent', docs: 'docsContent' };
             
             Object.values(tabs).forEach(id => {
                 document.getElementById(id).classList.remove('bg-primary-600');
@@ -936,6 +1088,9 @@
 
         // Check API key status on load
         checkApiKey();
+        
+        // Show customers tab by default
+        showTab('customers');
         
         async function loadCustomersOverview() {
             try {

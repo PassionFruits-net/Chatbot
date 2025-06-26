@@ -137,6 +137,34 @@ button#urlBtn span#urlBtnText {
     color: white !important;
 }
 
+/* Force white text in code blocks - strongest rules */
+.bg-gray-900 pre,
+.bg-gray-900 code,
+.bg-gray-900 pre *,
+.bg-gray-900 code *,
+pre.text-white,
+code.text-white,
+pre.text-white *,
+code.text-white *,
+div.bg-gray-900 pre,
+div.bg-gray-900 code,
+div.bg-gray-900 pre *,
+div.bg-gray-900 code * {
+    color: white !important;
+}
+
+/* Even more specific for documentation code blocks */
+#docsContent .bg-gray-900 pre,
+#docsContent .bg-gray-900 code,
+#docsContent .bg-gray-900 pre *,
+#docsContent .bg-gray-900 code *,
+#docsContent pre.text-white,
+#docsContent code.text-white,
+#docsContent pre.text-white *,
+#docsContent code.text-white * {
+    color: white !important;
+}
+
 /* Chat widget styling */
 .rag-widget {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
