@@ -17,7 +17,7 @@
             
             <div id="rag-chat" style="display: none; position: absolute; bottom: 80px; right: 0; width: 350px; height: 500px; background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden;">
                 <div style="background: #a855f7; color: white; padding: 16px; font-weight: 600; display: flex; align-items: center;">
-                    <img src="/logo.png" alt="Passion Fruits" style="height: 24px; width: auto; margin-right: 8px;">
+                    <img src="${new URL(script.src).origin}/logo.png" alt="Passion Fruits" style="height: 24px; width: auto; margin-right: 8px;">
                     Assistant
                     <button id="rag-close" style="margin-left: auto; background: none; border: none; color: white; cursor: pointer; font-size: 20px;">&times;</button>
                 </div>
@@ -109,11 +109,19 @@
         `;
 
         try {
-            const response = await fetch('/api/chat', {
+            // Get the base URL from where the widget was loaded
+            const scriptUrl = new URL(script.src);
+            const baseUrl = scriptUrl.origin;
+            
+            const response = await fetch(`${baseUrl}/api/chat`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ customerId, message })
             });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
 
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
@@ -128,6 +136,7 @@
                 if (done) break;
 
                 const text = decoder.decode(value);
+                console.log('Received chunk:', text);
                 const lines = text.split('\n');
 
                 for (const line of lines) {
@@ -154,6 +163,7 @@
                 messages.scrollTop = messages.scrollHeight;
             }
         } catch (error) {
+            console.error('Chat widget error:', error);
             const botMsg = document.getElementById(botMsgId);
             botMsg.querySelector('.rag-content').innerHTML = 'Sorry, I encountered an error. Please try again.';
         }

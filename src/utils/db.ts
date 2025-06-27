@@ -30,6 +30,27 @@ db.exec(`
 
   CREATE INDEX IF NOT EXISTS idx_chunks_customer ON chunks(customerId);
   CREATE INDEX IF NOT EXISTS idx_resources_customer ON resources(customerId);
+
+  CREATE TABLE IF NOT EXISTS settings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    key TEXT UNIQUE NOT NULL,
+    value TEXT NOT NULL,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS customers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    customerId TEXT UNIQUE NOT NULL,
+    name TEXT,
+    openaiEnabled BOOLEAN DEFAULT TRUE,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_customers_id ON customers(customerId);
+
+  -- Insert default settings if they don't exist
+  INSERT OR IGNORE INTO settings (key, value) VALUES ('openai_enabled_globally', 'true');
 `);
 
 export default db;

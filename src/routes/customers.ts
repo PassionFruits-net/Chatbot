@@ -9,14 +9,17 @@ router.get('/overview', authMiddleware, (req: Request, res: Response) => {
     // Get all customers with their resource counts and costs
     const customers = db.prepare(`
       SELECT 
-        r.customerId,
-        COUNT(DISTINCT r.id) as resourceCount,
-        COUNT(DISTINCT c.id) as chunkCount,
+        cust.customerId,
+        cust.name,
+        COALESCE(COUNT(DISTINCT r.id), 0) as resourceCount,
+        COALESCE(COUNT(DISTINCT c.id), 0) as chunkCount,
         MIN(r.uploadedAt) as firstUpload,
         MAX(r.uploadedAt) as lastUpload,
         COALESCE(u.totalCost, 0) as totalCost,
-        COALESCE(u.totalRequests, 0) as totalRequests
-      FROM resources r
+        COALESCE(u.totalRequests, 0) as totalRequests,
+        COALESCE(cust.openaiEnabled, 1) as openaiEnabled
+      FROM customers cust
+      LEFT JOIN resources r ON cust.customerId = r.customerId
       LEFT JOIN chunks c ON r.id = c.resourceId
       LEFT JOIN (
         SELECT 
@@ -25,9 +28,9 @@ router.get('/overview', authMiddleware, (req: Request, res: Response) => {
           COUNT(*) as totalRequests
         FROM usage_tracking 
         GROUP BY customerId
-      ) u ON r.customerId = u.customerId
-      GROUP BY r.customerId
-      ORDER BY r.customerId
+      ) u ON cust.customerId = u.customerId
+      GROUP BY cust.customerId, cust.name, cust.openaiEnabled
+      ORDER BY cust.customerId
     `).all();
 
     // Get resources for each customer
@@ -67,6 +70,55 @@ router.get('/overview', authMiddleware, (req: Request, res: Response) => {
   } catch (error) {
     console.error('Customer overview error:', error);
     res.status(500).json({ error: 'Failed to get customer overview' });
+  }
+});
+
+router.get('/:customerId/domains', authMiddleware, (req: Request, res: Response) => {
+  try {
+    const { customerId } = req.params;
+    
+    const customer = db.prepare('SELECT allowedDomains FROM customers WHERE customerId = ?').get(customerId) as { allowedDomains: string } | undefined;
+    
+    if (!customer) {
+      return res.status(404).json({ error: 'Customer not found' });
+    }
+    
+    const domains = JSON.parse(customer.allowedDomains || '[]');
+    res.json({ domains });
+  } catch (error) {
+    console.error('Failed to get domains:', error);
+    res.status(500).json({ error: 'Failed to get domains' });
+  }
+});
+
+router.post('/:customerId/domains', authMiddleware, (req: Request, res: Response) => {
+  try {
+    const { customerId } = req.params;
+    const { domains } = req.body;
+    
+    if (!Array.isArray(domains)) {
+      return res.status(400).json({ error: 'Domains must be an array' });
+    }
+    
+    // Validate domain format
+    const validDomains = domains.filter(d => {
+      try {
+        // Allow wildcards for ports
+        const testUrl = d.replace(':*', ':3000');
+        new URL(testUrl);
+        return true;
+      } catch {
+        return false;
+      }
+    });
+    
+    const stmt = db.prepare('UPDATE customers SET allowedDomains = ? WHERE customerId = ?');
+    stmt.run(JSON.stringify(validDomains), customerId);
+    
+    res.json({ success: true, domains: validDomains });
+  } catch (error) {
+    console.error('Failed to update domains:', error);
+    res.status(500).json({ error: 'Failed to update domains' });
   }
 });
 

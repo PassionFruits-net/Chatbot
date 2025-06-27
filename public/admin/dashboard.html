@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatbot - Admin Dashboard</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Chatbot - Admin Dashboard v2.6</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <link href="/styles.css" rel="stylesheet">
@@ -31,6 +34,16 @@
             }
         }
     </script>
+    <style>
+        /* Ensure code blocks have proper text color */
+        .bg-gray-900 pre code {
+            color: #f9fafb !important;
+        }
+        /* Inline code styling */
+        code:not(pre code) {
+            color: #374151;
+        }
+    </style>
 </head>
 <body class="bg-gray-900 min-h-screen">
     <nav class="bg-gray-800 shadow-xl border-b border-gray-700">
@@ -83,6 +96,51 @@
                     </div>
                     <p class="mt-2 text-sm text-gray-600">Get your API key from <a href="https://platform.openai.com/account/api-keys" target="_blank" class="text-blue-600 hover:underline">OpenAI Platform</a></p>
                     <div id="apiKeyStatus" class="mt-3 text-sm"></div>
+                </div>
+
+                <hr class="my-8 border-gray-200">
+                
+                <div class="max-w-xl">
+                    <h3 class="text-lg font-semibold mb-4">OpenAI Settings</h3>
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                        <h4 class="font-medium text-blue-800 mb-2">💡 Cost Management</h4>
+                        <p class="text-sm text-blue-700">Control when to use OpenAI (paid) for enhanced responses.</p>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="openaiEnabledGlobally" checked class="mr-3 rounded border-gray-300 text-primary-600 focus:ring-primary-500">
+                            <div>
+                                <span class="text-sm font-medium text-gray-700">Allow OpenAI calls</span>
+                                <p class="text-xs text-gray-500 mt-1">When enabled, customers can use OpenAI for enhanced responses (incurs API costs). When disabled, web search is used instead for free enhanced responses.</p>
+                            </div>
+                        </label>
+                    </div>
+                    
+                    <button onclick="saveOpenAISettings()" 
+                        class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700">Save Settings</button>
+                    <div id="openaiSettingsStatus" class="mt-3 text-sm"></div>
+                </div>
+
+                <hr class="my-8 border-gray-200">
+                
+                <div class="max-w-xl">
+                    <h3 class="text-lg font-semibold mb-4">Ollama Status</h3>
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                        <h4 class="font-medium text-green-800 mb-2">🤖 Local AI Model</h4>
+                        <p class="text-sm text-green-700">Shows the active Ollama model for local processing.</p>
+                    </div>
+                    
+                    <div id="ollamaStatus" class="p-4 border rounded-lg bg-gray-50">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <div id="ollamaStatusIcon" class="w-3 h-3 rounded-full bg-gray-400"></div>
+                            <span id="ollamaStatusText" class="text-sm font-medium">Checking...</span>
+                        </div>
+                        <div id="ollamaModelInfo" class="text-sm text-gray-600"></div>
+                    </div>
+                    
+                    <button onclick="loadOllamaStatus()" 
+                        class="mt-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">Refresh Status</button>
                 </div>
             </div>
 
@@ -213,16 +271,6 @@
                     </div>
                 </div>
 
-                <div>
-                    <h2 class="text-lg font-semibold mb-4">Resources</h2>
-                    <div class="mb-4">
-                        <input type="text" id="filterCustomerId" placeholder="Filter by Customer ID"
-                            class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <button onclick="loadResources()" 
-                            class="ml-2 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700">Filter</button>
-                    </div>
-                    <div id="resourcesList" class="space-y-2"></div>
-                </div>
             </div>
 
             <div id="analyticsContent" class="hidden">
@@ -469,6 +517,13 @@
             localStorage.removeItem('token');
             window.location.href = '/admin/login.html';
         }
+        
+        // Helper function for ISO date formatting
+        function formatISODate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toISOString().split('T')[0];
+        }
 
         function showTab(tab) {
             const tabs = { settings: 'settingsTab', customers: 'customersTab', resources: 'resourcesTab', analytics: 'analyticsTab', chat: 'chatTab', docs: 'docsTab' };
@@ -564,6 +619,8 @@
                         alert(`Successfully uploaded ${result.fileName} with ${result.chunks} chunks`);
                         e.target.reset();
                         loadResources();
+                        loadCustomersOverview();
+                        loadCustomerDropdowns();
                     }, 2000);
                 } else {
                     hideProgress();
@@ -614,6 +671,8 @@
                         alert(`Successfully scraped URL with ${result.chunks} chunks`);
                         e.target.reset();
                         loadResources();
+                        loadCustomersOverview();
+                        loadCustomerDropdowns();
                     }, 2000);
                 } else {
                     hideProgress();
@@ -641,7 +700,7 @@
                     <div class="flex justify-between items-center p-3 bg-gray-50 rounded">
                         <div>
                             <div class="font-medium">${r.fileName}</div>
-                            <div class="text-sm text-gray-600">${r.chunkCount} chunks • ${new Date(r.uploadedAt).toLocaleString()}</div>
+                            <div class="text-sm text-gray-600">${r.chunkCount} chunks • ${formatISODate(r.uploadedAt)}</div>
                         </div>
                         <button onclick="deleteResource(${r.id})" 
                             class="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700">Delete</button>
@@ -768,6 +827,11 @@
                                 
                                 // Store sources globally for toggle function
                                 window.currentSources = allSources;
+                            }
+                            
+                            // Update backend status if provided
+                            if (data.backend) {
+                                updateBackendStatus(data.backend);
                             }
                             } catch (parseErr) {
                                 console.error('JSON parse error:', parseErr);
@@ -969,6 +1033,110 @@
                 alert('Error saving API key');
             }
         }
+
+        async function loadOpenAISettings() {
+            try {
+                const openaiResponse = await apiCall('/api/config/openai-settings');
+                const openaiData = await openaiResponse.json();
+                
+                document.getElementById('openaiEnabledGlobally').checked = openaiData.openaiEnabledGlobally;
+            } catch (error) {
+                console.error('Failed to load settings:', error);
+                // Set default if loading fails
+                document.getElementById('openaiEnabledGlobally').checked = true;
+            }
+        }
+
+        async function saveOpenAISettings() {
+            const openaiEnabledGlobally = document.getElementById('openaiEnabledGlobally').checked;
+            const statusDiv = document.getElementById('openaiSettingsStatus');
+            
+            try {
+                const openaiResponse = await apiCall('/api/config/openai-settings', {
+                    method: 'POST',
+                    body: JSON.stringify({ openaiEnabledGlobally })
+                });
+                
+                if (openaiResponse.ok) {
+                    const result = await openaiResponse.json();
+                    statusDiv.innerHTML = '<span class="text-green-600">✓ Settings saved successfully</span>';
+                    
+                    // Refresh customer data if needed
+                    if (document.getElementById('customersContent').style.display !== 'none') {
+                        loadCustomersOverview();
+                    }
+                } else {
+                    const error = await openaiResponse.json();
+                    statusDiv.innerHTML = '<span class="text-red-600">✗ Failed to save: ' + error.error + '</span>';
+                }
+            } catch (err) {
+                statusDiv.innerHTML = '<span class="text-red-600">✗ Error saving settings</span>';
+                console.error('Error saving OpenAI settings:', err);
+            }
+        }
+
+        async function updateCustomerOpenAI(customerId, enabled) {
+            try {
+                const response = await apiCall(`/api/config/customer-openai-settings/${customerId}`, {
+                    method: 'POST',
+                    body: JSON.stringify({ openaiEnabled: enabled })
+                });
+                
+                if (response.ok) {
+                    console.log(`OpenAI ${enabled ? 'enabled' : 'disabled'} for customer ${customerId}`);
+                } else {
+                    const error = await response.json();
+                    alert('Failed to update customer OpenAI setting: ' + error.error);
+                    // Revert checkbox
+                    document.getElementById(`openai-${customerId}`).checked = !enabled;
+                }
+            } catch (err) {
+                console.error('Error updating customer OpenAI setting:', err);
+                alert('Error updating customer OpenAI setting');
+                // Revert checkbox
+                document.getElementById(`openai-${customerId}`).checked = !enabled;
+            }
+        }
+
+        async function loadOllamaStatus() {
+            try {
+                const response = await apiCall('/api/config/ollama-status');
+                const data = await response.json();
+                
+                const statusIcon = document.getElementById('ollamaStatusIcon');
+                const statusText = document.getElementById('ollamaStatusText');
+                const modelInfo = document.getElementById('ollamaModelInfo');
+                
+                if (data.available) {
+                    statusIcon.className = 'w-3 h-3 rounded-full bg-green-500';
+                    statusText.textContent = 'Ollama is running';
+                    
+                    if (data.activeModel) {
+                        const modelSize = data.availableModels.find(m => m.name === data.activeModel)?.size;
+                        const sizeText = modelSize ? ` (${(modelSize / 1024 / 1024 / 1024).toFixed(1)}GB)` : '';
+                        modelInfo.innerHTML = `
+                            <div class="font-medium text-green-700">Active Model: ${data.activeModel}${sizeText}</div>
+                            <div class="text-xs text-gray-500 mt-1">${data.availableModels.length} models available</div>
+                        `;
+                    } else {
+                        modelInfo.innerHTML = '<div class="text-yellow-600">No models available</div>';
+                    }
+                } else {
+                    statusIcon.className = 'w-3 h-3 rounded-full bg-red-500';
+                    statusText.textContent = 'Ollama not available';
+                    modelInfo.innerHTML = `<div class="text-red-600">${data.error || 'Service not running'}</div>`;
+                }
+            } catch (error) {
+                console.error('Failed to load Ollama status:', error);
+                const statusIcon = document.getElementById('ollamaStatusIcon');
+                const statusText = document.getElementById('ollamaStatusText');
+                const modelInfo = document.getElementById('ollamaModelInfo');
+                
+                statusIcon.className = 'w-3 h-3 rounded-full bg-red-500';
+                statusText.textContent = 'Error checking status';
+                modelInfo.innerHTML = '<div class="text-red-600">Connection failed</div>';
+            }
+        }
         
         async function loadAnalytics() {
             const customerId = document.getElementById('analyticsCustomer').value;
@@ -1011,7 +1179,7 @@
                     const width = maxCost > 0 ? (day.dailyCost / maxCost) * 100 : 0;
                     return `
                         <div class="flex items-center space-x-2">
-                            <div class="w-20 text-sm">${new Date(day.date).toLocaleDateString()}</div>
+                            <div class="w-20 text-sm">${formatISODate(day.date)}</div>
                             <div class="flex-1 bg-gray-200 rounded-full h-4">
                                 <div class="bg-blue-500 h-4 rounded-full" style="width: ${width}%"></div>
                             </div>
@@ -1039,7 +1207,7 @@
                     <div class="flex justify-between items-center p-3 bg-gray-50 rounded">
                         <div>
                             <div class="font-medium">${customer.customerId}</div>
-                            <div class="text-sm text-gray-600">${customer.totalRequests} requests • Last: ${new Date(customer.lastActivity).toLocaleDateString()}</div>
+                            <div class="text-sm text-gray-600">${customer.totalRequests} requests • Last: ${formatISODate(customer.lastActivity)}</div>
                         </div>
                         <div class="text-right">
                             <div class="font-semibold">$${customer.totalCost.toFixed(4)}</div>
@@ -1138,6 +1306,10 @@
         // Check API key status on load
         checkApiKey();
         
+        // Load OpenAI settings on load
+        loadOpenAISettings();
+        loadOllamaStatus();
+        
         // Show customers tab by default
         showTab('chat');
         
@@ -1164,8 +1336,8 @@
                 // Update customer list
                 const customersList = document.getElementById('customersList');
                 customersList.innerHTML = data.customers.map(customer => {
-                    const lastUpload = new Date(customer.lastUpload).toLocaleDateString();
-                    const firstUpload = new Date(customer.firstUpload).toLocaleDateString();
+                    const lastUpload = formatISODate(customer.lastUpload);
+                    const firstUpload = formatISODate(customer.firstUpload);
                     
                     return `
                         <div class="border border-gray-200 rounded-lg">
@@ -1188,6 +1360,15 @@
                                     </div>
                                 </div>
                                 <div class="ml-4 flex items-center space-x-2">
+                                    <div class="text-xs">
+                                        <label class="flex items-center" onclick="event.stopPropagation();">
+                                            <input type="checkbox" id="openai-${customer.customerId}" 
+                                                ${customer.openaiEnabled !== false ? 'checked' : ''} 
+                                                onchange="updateCustomerOpenAI('${customer.customerId}', this.checked)"
+                                                class="mr-1 text-primary-600 focus:ring-primary-500">
+                                            <span class="text-gray-600">OpenAI</span>
+                                        </label>
+                                    </div>
                                     <button onclick="event.stopPropagation(); deleteCustomer('${customer.customerId}')" 
                                         class="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700">
                                         Delete All
@@ -1200,12 +1381,30 @@
                             
                             <div id="resources-${customer.customerId}" class="hidden border-t border-gray-200">
                                 <div class="p-4 space-y-3">
+                                    <h4 class="font-semibold text-gray-700 mb-2">Allowed Domains</h4>
+                                    <div class="mb-4">
+                                        <div id="domains-${customer.customerId}" class="space-y-2 mb-3">
+                                            <!-- Domains will be loaded here -->
+                                        </div>
+                                        <div class="flex space-x-2">
+                                            <input type="text" id="domain-input-${customer.customerId}" 
+                                                placeholder="https://example.com" 
+                                                class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500">
+                                            <button onclick="addDomain('${customer.customerId}')" 
+                                                class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+                                                Add Domain
+                                            </button>
+                                        </div>
+                                        <p class="text-xs text-gray-500 mt-1">Use * for wildcard ports, e.g., http://localhost:*</p>
+                                    </div>
+                                    
+                                    <h4 class="font-semibold text-gray-700 mb-2">Resources</h4>
                                     ${customer.resources.map(resource => `
                                         <div class="flex justify-between items-center p-3 bg-white border border-gray-100 rounded">
                                             <div class="flex-1">
                                                 <div class="font-medium">${resource.fileName}</div>
                                                 <div class="text-sm text-gray-600">
-                                                    ${resource.mime} • ${resource.chunkCount} chunks • ${new Date(resource.uploadedAt).toLocaleDateString()}
+                                                    ${resource.mime} • ${resource.chunkCount} chunks • ${formatISODate(resource.uploadedAt)}
                                                 </div>
                                             </div>
                                             <button onclick="deleteResource(${resource.id})" 
@@ -1234,9 +1433,103 @@
             if (resourcesDiv.classList.contains('hidden')) {
                 resourcesDiv.classList.remove('hidden');
                 chevron.style.transform = 'rotate(180deg)';
+                // Load domains when opening
+                loadCustomerDomains(customerId);
             } else {
                 resourcesDiv.classList.add('hidden');
                 chevron.style.transform = 'rotate(0deg)';
+            }
+        }
+        
+        async function loadCustomerDomains(customerId) {
+            try {
+                const response = await apiCall(`/api/customers/${customerId}/domains`);
+                const data = await response.json();
+                
+                const domainsDiv = document.getElementById(`domains-${customerId}`);
+                if (data.domains && data.domains.length > 0) {
+                    domainsDiv.innerHTML = data.domains.map(domain => `
+                        <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
+                            <code class="text-sm">${domain}</code>
+                            <button onclick="removeDomain('${customerId}', '${domain}')" 
+                                class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">
+                                Remove
+                            </button>
+                        </div>
+                    `).join('');
+                } else {
+                    domainsDiv.innerHTML = '<p class="text-gray-500 text-sm">No domains whitelisted</p>';
+                }
+            } catch (error) {
+                console.error('Failed to load domains:', error);
+            }
+        }
+        
+        async function addDomain(customerId) {
+            const input = document.getElementById(`domain-input-${customerId}`);
+            const domain = input.value.trim();
+            
+            if (!domain) {
+                alert('Please enter a domain');
+                return;
+            }
+            
+            try {
+                // First get existing domains
+                const getResponse = await apiCall(`/api/customers/${customerId}/domains`);
+                const data = await getResponse.json();
+                const domains = data.domains || [];
+                
+                // Add new domain
+                domains.push(domain);
+                
+                // Update domains
+                const response = await apiCall(`/api/customers/${customerId}/domains`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ domains })
+                });
+                
+                if (response.ok) {
+                    input.value = '';
+                    loadCustomerDomains(customerId);
+                } else {
+                    const error = await response.json();
+                    alert('Failed to add domain: ' + error.error);
+                }
+            } catch (error) {
+                console.error('Failed to add domain:', error);
+                alert('Error adding domain');
+            }
+        }
+        
+        async function removeDomain(customerId, domainToRemove) {
+            if (!confirm(`Remove ${domainToRemove} from whitelist?`)) {
+                return;
+            }
+            
+            try {
+                // Get existing domains
+                const getResponse = await apiCall(`/api/customers/${customerId}/domains`);
+                const data = await getResponse.json();
+                const domains = (data.domains || []).filter(d => d !== domainToRemove);
+                
+                // Update domains
+                const response = await apiCall(`/api/customers/${customerId}/domains`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ domains })
+                });
+                
+                if (response.ok) {
+                    loadCustomerDomains(customerId);
+                } else {
+                    const error = await response.json();
+                    alert('Failed to remove domain: ' + error.error);
+                }
+            } catch (error) {
+                console.error('Failed to remove domain:', error);
+                alert('Error removing domain');
             }
         }
         
@@ -1268,16 +1561,31 @@
         loadCustomerDropdowns();
         
         // Simple add customer function
-        function showAddCustomerModal() {
+        async function showAddCustomerModal() {
             const customerId = prompt('Enter new customer ID:');
             if (customerId && customerId.trim()) {
                 const cleanId = customerId.trim();
-                if (!customers.includes(cleanId)) {
-                    customers.push(cleanId);
-                    updateCustomerDropdowns();
-                    alert(`Customer "${cleanId}" added successfully!`);
-                } else {
-                    alert('Customer already exists!');
+                
+                try {
+                    // Create customer in database
+                    const response = await apiCall(`/api/customers/${cleanId}/domains`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ domains: [] }) // Start with no domains
+                    });
+                    
+                    if (response.ok) {
+                        customers.push(cleanId);
+                        updateCustomerDropdowns();
+                        loadCustomersOverview();
+                        alert(`Customer "${cleanId}" added successfully!`);
+                    } else {
+                        const error = await response.json();
+                        alert('Failed to create customer: ' + error.error);
+                    }
+                } catch (error) {
+                    console.error('Failed to create customer:', error);
+                    alert('Error creating customer');
                 }
             }
         }
@@ -1294,6 +1602,86 @@
                 icon.textContent = '▶';
             }
         }
+
+        // Backend status management
+        function updateBackendStatus(backend) {
+            const statusElement = document.getElementById('backendStatus');
+            const descriptionElement = document.getElementById('backendDescription');
+            
+            switch (backend) {
+                case 'openai':
+                    statusElement.className = 'text-sm font-semibold px-2 py-1 rounded-full bg-green-100 text-green-800';
+                    statusElement.textContent = '🤖 OpenAI';
+                    descriptionElement.textContent = 'Using OpenAI GPT for enhanced responses with document analysis.';
+                    break;
+                case 'web_search':
+                    statusElement.className = 'text-sm font-semibold px-2 py-1 rounded-full bg-blue-100 text-blue-800';
+                    statusElement.textContent = '🌐 Web Search';
+                    descriptionElement.textContent = 'Using web search for general answers when OpenAI is disabled.';
+                    break;
+                case 'documents_only':
+                    statusElement.className = 'text-sm font-semibold px-2 py-1 rounded-full bg-yellow-100 text-yellow-800';
+                    statusElement.textContent = '📄 Documents Only';
+                    descriptionElement.textContent = 'Only searching uploaded documents (no external AI or web search).';
+                    break;
+                default:
+                    statusElement.className = 'text-sm font-semibold px-2 py-1 rounded-full bg-gray-200 text-gray-700';
+                    statusElement.textContent = 'Unknown';
+                    descriptionElement.textContent = 'Backend mode could not be determined.';
+            }
+        }
+
+        async function checkBackendStatus() {
+            const customerId = document.getElementById('chatCustomerId').value;
+            const includeGeneralAI = document.getElementById('includeGeneralAI').checked;
+            
+            if (!customerId) {
+                updateBackendStatus('unknown');
+                return;
+            }
+            
+            try {
+                // Check OpenAI settings only
+                const [globalResponse, customerResponse] = await Promise.all([
+                    apiCall('/api/config/openai-settings'),
+                    apiCall(`/api/config/customer-openai-settings/${customerId}`)
+                ]);
+                
+                const globalData = await globalResponse.json();
+                const customerData = await customerResponse.json();
+                
+                const canUseOpenAI = globalData.openaiEnabledGlobally && customerData.openaiEnabled;
+                
+                // Priority: OpenAI > Web Search > Documents Only
+                if (canUseOpenAI) {
+                    updateBackendStatus('openai');
+                } else if (includeGeneralAI) {
+                    updateBackendStatus('web_search');
+                } else {
+                    updateBackendStatus('documents_only');
+                }
+            } catch (error) {
+                console.error('Error checking backend status:', error);
+                updateBackendStatus('unknown');
+            }
+        }
+
+        // Add event listeners for backend status updates
+        document.addEventListener('DOMContentLoaded', function() {
+            const customerSelect = document.getElementById('chatCustomerId');
+            const generalAICheckbox = document.getElementById('includeGeneralAI');
+            
+            if (customerSelect) {
+                customerSelect.addEventListener('change', checkBackendStatus);
+            }
+            
+            if (generalAICheckbox) {
+                generalAICheckbox.addEventListener('change', checkBackendStatus);
+            }
+            
+            // Initial check
+            setTimeout(checkBackendStatus, 500);
+        });
     </script>
 </body>
 </html>
