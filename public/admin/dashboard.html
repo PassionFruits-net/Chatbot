@@ -559,6 +559,11 @@
             const tabs = { settings: 'settingsTab', customers: 'customersTab', resources: 'resourcesTab', analytics: 'analyticsTab', chat: 'chatTab', docs: 'docsTab' };
             const contents = { settings: 'settingsContent', customers: 'customersContent', resources: 'resourcesContent', analytics: 'analyticsContent', chat: 'chatContent', docs: 'docsContent' };
             
+            // Update URL hash to preserve tab state
+            if (window.location.hash !== '#' + tab) {
+                window.location.hash = '#' + tab;
+            }
+            
             // Reset all tabs to inactive state
             Object.values(tabs).forEach(id => {
                 const tabElement = document.getElementById(id);
@@ -1345,8 +1350,24 @@
         loadOpenAISettings();
         loadOllamaStatus();
         
-        // Show customers tab by default
-        showTab('chat');
+        // Initialize tab from URL hash or default to customers
+        function initializeTab() {
+            const hash = window.location.hash.substring(1); // Remove the '#'
+            const validTabs = ['settings', 'customers', 'resources', 'analytics', 'chat', 'docs'];
+            const defaultTab = 'customers';
+            
+            if (validTabs.includes(hash)) {
+                showTab(hash);
+            } else {
+                showTab(defaultTab);
+            }
+        }
+        
+        // Listen for hash changes (back/forward button)
+        window.addEventListener('hashchange', initializeTab);
+        
+        // Initialize on page load
+        initializeTab();
         
         async function loadCustomersOverview() {
             try {
