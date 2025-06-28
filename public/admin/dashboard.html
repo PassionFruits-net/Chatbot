@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>Chatbot - Admin Dashboard v2.6</title>
+    <title>Chatbot - Admin Dashboard v2.7</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <link href="/styles.css" rel="stylesheet">
@@ -397,6 +397,7 @@
                             <pre class="text-white"><code class="text-white">&lt;script 
   src="https://chat.passionfruits.net/widget.js" 
   data-customer="YOUR_CUSTOMER_ID"
+  data-logo="https://your-website.com/logo.png"
   data-position="bottom-left"
   data-color="#9333ea"
   data-greeting="Hi! How can I help you today?"
@@ -405,6 +406,10 @@
                         </div>
                         
                         <div class="mt-4 space-y-2">
+                            <div class="flex items-start space-x-3">
+                                <span class="font-mono text-sm bg-gray-100 px-2 py-1 rounded">data-logo</span>
+                                <span class="text-sm text-gray-600">Custom logo URL to replace the Passion Fruits logo (24px height recommended)</span>
+                            </div>
                             <div class="flex items-start space-x-3">
                                 <span class="font-mono text-sm bg-gray-100 px-2 py-1 rounded">data-position</span>
                                 <span class="text-sm text-gray-600">Position of chat bubble: <code>bottom-right</code> (default), <code>bottom-left</code>, <code>top-right</code>, <code>top-left</code></span>
