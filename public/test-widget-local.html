@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Widget Test Page - Passion Fruits Chatbot</title>
+    <title>Widget Test Page - Local Testing</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -64,18 +64,32 @@
             font-weight: bold;
             margin-right: 10px;
         }
+        .notice {
+            background: #fef3c7;
+            border: 1px solid #d97706;
+            color: #92400e;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🫐 Passion Fruits Chatbot - Widget Test Page</h1>
+        <h1>🫐 Passion Fruits Chatbot - Local Test Page</h1>
+        
+        <div class="notice">
+            <strong>⚠️ Local Testing Notice:</strong> When testing locally with file://, the complexity selector won't appear due to CORS restrictions. 
+            <br><strong>For full testing including complexity features, visit:</strong> 
+            <a href="https://chat.passionfruits.net/test-widget.html" target="_blank">https://chat.passionfruits.net/test-widget.html</a>
+        </div>
         
         <div class="info">
             <h2>Test Configuration</h2>
             <p><strong>Customer ID:</strong> <code>demo-dani</code></p>
             <p><strong>Server:</strong> <code>https://chat.passionfruits.net</code></p>
-            <p><strong>Allowed Origins:</strong> <code>http://localhost:*</code>, <code>https://localhost:*</code>, <code>file://</code></p>
-            <p><strong>Status:</strong> <span id="status">Checking...</span></p>
+            <p><strong>Complexity Selection:</strong> <code>enabled</code> (only visible on remote test page)</p>
+            <p><strong>Status:</strong> <span id="status">Local testing - limited functionality</span></p>
         </div>
 
         <div class="section">
@@ -94,6 +108,19 @@
         </div>
 
         <div class="section">
+            <h2>Testing Instructions</h2>
+            <div style="background: #f3e8ff; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <h3 style="color: #7c3aed; margin: 0 0 10px 0;">🧠 To Test Explanation Complexity Features:</h3>
+                <ol style="margin: 0; color: #6b21a8;">
+                    <li>Visit the remote test page: <a href="https://chat.passionfruits.net/test-widget.html" target="_blank">https://chat.passionfruits.net/test-widget.html</a></li>
+                    <li>Look for the "🧠 Simple explanations (14+ reading level)" checkbox in the chat widget</li>
+                    <li>Try asking the same question with different complexity settings</li>
+                    <li>Compare the response formats and language complexity</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="section">
             <h2>Integration Code</h2>
             <h3>Basic Integration</h3>
             <pre>&lt;script src="https://chat.passionfruits.net/widget.js" data-customer="demo-dani"&gt;&lt;/script&gt;</pre>
@@ -105,24 +132,24 @@
         </div>
 
         <div class="section">
-            <h2>Live Demo</h2>
+            <h2>Local Demo (Limited)</h2>
             <div class="demo-section">
                 <p>The chatbot widget should appear in the bottom-right corner of this page.</p>
-                <p>Try asking questions about the uploaded documents!</p>
+                <p><strong>Note:</strong> Due to CORS restrictions, the complexity selector won't appear locally.</p>
                 
                 <h3>Sample Questions:</h3>
                 <ul>
                     <li>What is LifePower?</li>
                     <li>Tell me about the main concepts</li>
                     <li>What are the key benefits?</li>
-                    <li>Explain quantum computing (test complexity differences)</li>
+                    <li>Explain quantum computing</li>
                 </ul>
                 
-                <div style="background: #f3e8ff; padding: 15px; border-radius: 8px; margin-top: 20px;">
-                    <h4 style="color: #7c3aed; margin: 0 0 10px 0;">🧠 Testing Explanation Complexity</h4>
-                    <p style="margin: 0; color: #6b21a8;">
-                        If enabled for this customer, you'll see a "Simple explanations" toggle in the chat widget. 
-                        Try asking the same question with different complexity settings to see the difference!
+                <div style="background: #fee2e2; padding: 15px; border-radius: 8px; margin-top: 20px;">
+                    <h4 style="color: #dc2626; margin: 0 0 10px 0;">⚠️ Local Limitations</h4>
+                    <p style="margin: 0; color: #7f1d1d;">
+                        When testing with file://, you won't see the complexity selector due to browser security restrictions. 
+                        For full functionality testing, use the remote test page.
                     </p>
                 </div>
             </div>
@@ -131,32 +158,5 @@
 
     <!-- Widget Script -->
     <script src="https://chat.passionfruits.net/widget.js" data-customer="demo-dani"></script>
-    
-    <!-- Status Check -->
-    <script>
-        // Check if server is running
-        fetch('https://chat.passionfruits.net/api/chat', {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Origin': window.location.origin
-            },
-            body: JSON.stringify({ customerId: 'demo-dani', message: 'test' })
-        })
-        .then(response => {
-            const statusEl = document.getElementById('status');
-            if (response.status === 403) {
-                statusEl.innerHTML = '<span style="color: #ef4444;">❌ Domain not whitelisted - Add http://localhost:* to allowed domains</span>';
-            } else if (response.ok) {
-                statusEl.innerHTML = '<span style="color: #10b981;">✅ Connected and ready</span>';
-            } else {
-                statusEl.innerHTML = '<span style="color: #f59e0b;">⚠️ Server running but returned error: ' + response.status + '</span>';
-            }
-        })
-        .catch(error => {
-            console.error('Status check error:', error);
-            document.getElementById('status').innerHTML = '<span style="color: #ef4444;">❌ Connection failed - Check console for details</span>';
-        });
-    </script>
 </body>
 </html>

@@ -17,7 +17,10 @@ router.get('/overview', authMiddleware, (req: Request, res: Response) => {
         MAX(r.uploadedAt) as lastUpload,
         COALESCE(u.totalCost, 0) as totalCost,
         COALESCE(u.totalRequests, 0) as totalRequests,
-        COALESCE(cust.openaiEnabled, 1) as openaiEnabled
+        COALESCE(cust.openaiEnabled, 1) as openaiEnabled,
+        COALESCE(cust.explanationComplexity, 'advanced') as explanationComplexity,
+        COALESCE(cust.allowComplexitySelection, 0) as allowComplexitySelection,
+        cust.systemPrompt as systemPrompt
       FROM customers cust
       LEFT JOIN resources r ON cust.customerId = r.customerId
       LEFT JOIN chunks c ON r.id = c.resourceId
@@ -29,7 +32,7 @@ router.get('/overview', authMiddleware, (req: Request, res: Response) => {
         FROM usage_tracking 
         GROUP BY customerId
       ) u ON cust.customerId = u.customerId
-      GROUP BY cust.customerId, cust.name, cust.openaiEnabled
+      GROUP BY cust.customerId, cust.name, cust.openaiEnabled, cust.explanationComplexity, cust.allowComplexitySelection, cust.systemPrompt
       ORDER BY cust.customerId
     `).all();
 
@@ -70,6 +73,39 @@ router.get('/overview', authMiddleware, (req: Request, res: Response) => {
   } catch (error) {
     console.error('Customer overview error:', error);
     res.status(500).json({ error: 'Failed to get customer overview' });
+  }
+});
+
+router.get('/:customerId/settings', (req: Request, res: Response) => {
+  try {
+    const { customerId } = req.params;
+    
+    const customer = db.prepare(`
+      SELECT 
+        explanationComplexity, 
+        allowComplexitySelection 
+      FROM customers 
+      WHERE customerId = ?
+    `).get(customerId) as { 
+      explanationComplexity: string; 
+      allowComplexitySelection: number; 
+    } | undefined;
+    
+    if (!customer) {
+      // Return default settings for new customers
+      return res.json({ 
+        explanationComplexity: 'advanced',
+        allowComplexitySelection: false
+      });
+    }
+    
+    res.json({
+      explanationComplexity: customer.explanationComplexity || 'advanced',
+      allowComplexitySelection: customer.allowComplexitySelection === 1
+    });
+  } catch (error) {
+    console.error('Failed to get customer settings:', error);
+    res.status(500).json({ error: 'Failed to get customer settings' });
   }
 });
 
@@ -119,6 +155,61 @@ router.post('/:customerId/domains', authMiddleware, (req: Request, res: Response
   } catch (error) {
     console.error('Failed to update domains:', error);
     res.status(500).json({ error: 'Failed to update domains' });
+  }
+});
+
+router.post('/:customerId/explanation-settings', authMiddleware, (req: Request, res: Response) => {
+  try {
+    const { customerId } = req.params;
+    const { explanationComplexity, allowComplexitySelection, systemPrompt } = req.body;
+    
+    // Validate explanationComplexity
+    if (explanationComplexity && !['simple', 'advanced'].includes(explanationComplexity)) {
+      return res.status(400).json({ error: 'Explanation complexity must be "simple" or "advanced"' });
+    }
+    
+    // Validate allowComplexitySelection
+    if (allowComplexitySelection !== undefined && typeof allowComplexitySelection !== 'boolean') {
+      return res.status(400).json({ error: 'Allow complexity selection must be a boolean' });
+    }
+    
+    // Validate systemPrompt
+    if (systemPrompt !== undefined && typeof systemPrompt !== 'string') {
+      return res.status(400).json({ error: 'System prompt must be a string' });
+    }
+    
+    const updateFields = [];
+    const params = [];
+    
+    if (explanationComplexity) {
+      updateFields.push('explanationComplexity = ?');
+      params.push(explanationComplexity);
+    }
+    
+    if (allowComplexitySelection !== undefined) {
+      updateFields.push('allowComplexitySelection = ?');
+      // Convert boolean to integer for SQLite
+      params.push(allowComplexitySelection ? 1 : 0);
+    }
+    
+    if (systemPrompt !== undefined) {
+      updateFields.push('systemPrompt = ?');
+      params.push(systemPrompt || null);
+    }
+    
+    if (updateFields.length === 0) {
+      return res.status(400).json({ error: 'No valid fields to update' });
+    }
+    
+    params.push(customerId);
+    
+    const stmt = db.prepare(`UPDATE customers SET ${updateFields.join(', ')} WHERE customerId = ?`);
+    stmt.run(...params);
+    
+    res.json({ success: true, message: 'Explanation settings updated successfully' });
+  } catch (error) {
+    console.error('Failed to update explanation settings:', error);
+    res.status(500).json({ error: 'Failed to update explanation settings' });
   }
 });
 

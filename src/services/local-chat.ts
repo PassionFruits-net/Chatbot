@@ -6,6 +6,7 @@ export interface LocalChatMessage {
   message: string;
   chunks: Array<{ text: string; fileName: string }>;
   includeGeneralAI?: boolean;
+  explanationComplexity?: string;
 }
 
 export interface LocalChatResponse {
@@ -24,12 +25,29 @@ class LocalChatService {
   }
 
   private buildPrompt(chatMessage: LocalChatMessage): string {
-    const { message, chunks, includeGeneralAI } = chatMessage;
+    const { customerId, message, chunks, includeGeneralAI, explanationComplexity } = chatMessage;
     
     let prompt = '';
     
+    // Get customer's custom system prompt
+    const db = require('../utils/db').db;
+    const customerRow = db.prepare('SELECT systemPrompt FROM customers WHERE customerId = ?').get(customerId) as { systemPrompt: string | null } | undefined;
+    const customSystemPrompt = customerRow?.systemPrompt;
+    
+    // Add complexity and formatting instructions
+    const complexityInstructions = explanationComplexity === 'simple' 
+      ? " Use simple language suitable for a 14-year-old reading level. Break your response into short paragraphs. Use **bold text** for key points and include relevant emojis. Explain technical terms simply."
+      : " Structure your response with clear paragraphs. Use **bold text** for important concepts and include relevant emojis for readability.";
+
     if (chunks && chunks.length > 0) {
-      prompt += "You are a helpful AI assistant. Use the following context from documents to answer the user's question. ";
+      // Use custom system prompt if available, otherwise default
+      if (customSystemPrompt) {
+        prompt += customSystemPrompt + " Use the following context from documents to answer the user's question.";
+      } else {
+        prompt += "You are a helpful AI assistant. Use the following context from documents to answer the user's question.";
+      }
+      prompt += complexityInstructions;
+      prompt += " ";
       
       if (!includeGeneralAI) {
         prompt += "Only use information from the provided context. If the context doesn't contain relevant information, say so.";

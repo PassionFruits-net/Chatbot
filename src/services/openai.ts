@@ -2,6 +2,7 @@ import OpenAI from 'openai';
 import dotenv from 'dotenv';
 import { encode } from 'gpt-3-encoder';
 import { estimateChatCost, trackUsage } from './cost-tracker';
+import db from '../utils/db';
 
 dotenv.config();
 
@@ -14,14 +15,52 @@ export interface ChatMessage {
   message: string;
   chunks: Array<{ text: string; fileName: string }>;
   includeGeneralAI?: boolean;
+  explanationComplexity?: string;
 }
 
 export async function* streamChat(params: ChatMessage) {
   const includeGeneralAI = params.includeGeneralAI || false;
+  const explanationComplexity = params.explanationComplexity || 'advanced';
   
-  const systemPrompt = includeGeneralAI 
-    ? `You are an assistant for CUSTOMER ${params.customerId}. You can use both the information from <docs></docs> (customer's documents) and your general knowledge to provide comprehensive answers. Prioritize customer documents when they contain relevant information, but supplement with your general knowledge when needed. Do NOT include citations in your response - the sources will be shown separately.`
-    : `You are an assistant for CUSTOMER ${params.customerId}. Answer ONLY with the information inside <docs></docs>. If the answer isn't there, reply "I don't have that information". Do NOT include any citations or source references in your response - the sources will be shown separately.`;
+  // Create complexity-specific formatting instructions
+  const complexityInstructions = explanationComplexity === 'simple' 
+    ? `
+
+**IMPORTANT FORMATTING REQUIREMENTS:**
+- Use simple language suitable for a 14-year-old reading level
+- Break text into short paragraphs (2-3 sentences each)
+- Use **bold text** to highlight key points
+- Include relevant emojis for visual effect (📚 for learning, 💡 for ideas, ⚠️ for warnings, etc.)
+- Explain technical terms in simple words
+- Use bullet points or numbered lists when helpful
+- Keep sentences short and clear`
+    : `
+
+**IMPORTANT FORMATTING REQUIREMENTS:**
+- Structure your response with clear paragraphs
+- Use **bold text** to emphasize important concepts and key terms
+- Include relevant emojis to enhance readability (📊 for data, 🔧 for technical, 💡 for insights, etc.)
+- Use bullet points or numbered lists for clarity when appropriate
+- Maintain professional but engaging tone`;
+
+  // Get customer's custom system prompt
+  const customerRow = db.prepare('SELECT systemPrompt FROM customers WHERE customerId = ?').get(params.customerId) as { systemPrompt: string | null } | undefined;
+  const customSystemPrompt = customerRow?.systemPrompt;
+  
+  let basePrompt;
+  if (customSystemPrompt) {
+    // Use custom system prompt with document context
+    basePrompt = includeGeneralAI 
+      ? `${customSystemPrompt} You can use both the information from <docs></docs> (customer's documents) and your general knowledge to provide comprehensive answers. Prioritize customer documents when they contain relevant information, but supplement with your general knowledge when needed. Do NOT include citations in your response - the sources will be shown separately.`
+      : `${customSystemPrompt} Answer ONLY with the information inside <docs></docs>. If the answer isn't there, reply "I don't have that information". Do NOT include any citations or source references in your response - the sources will be shown separately.`;
+  } else {
+    // Use default system prompt
+    basePrompt = includeGeneralAI 
+      ? `You are an assistant for CUSTOMER ${params.customerId}. You can use both the information from <docs></docs> (customer's documents) and your general knowledge to provide comprehensive answers. Prioritize customer documents when they contain relevant information, but supplement with your general knowledge when needed. Do NOT include citations in your response - the sources will be shown separately.`
+      : `You are an assistant for CUSTOMER ${params.customerId}. Answer ONLY with the information inside <docs></docs>. If the answer isn't there, reply "I don't have that information". Do NOT include any citations or source references in your response - the sources will be shown separately.`;
+  }
+  
+  const systemPrompt = basePrompt + complexityInstructions;
   
   let userPrompt = `${params.message}
 <docs>

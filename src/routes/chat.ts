@@ -10,7 +10,7 @@ const router = Router();
 
 router.post('/chat', validateOrigin, async (req: Request, res: Response) => {
   try {
-    const { customerId, message, includeGeneralAI } = req.body;
+    const { customerId, message, includeGeneralAI, explanationComplexity } = req.body;
 
     if (!customerId || !message) {
       return res.status(400).json({ error: 'customerId and message are required' });
@@ -68,12 +68,12 @@ router.post('/chat', validateOrigin, async (req: Request, res: Response) => {
     // Route to appropriate backend
     if (backendMode === 'local_rag') {
       // Use local RAG with Ollama
-      for await (const chunk of localChatService.streamChat({ customerId, message, chunks, includeGeneralAI })) {
+      for await (const chunk of localChatService.streamChat({ customerId, message, chunks, includeGeneralAI, explanationComplexity })) {
         res.write(`data: ${JSON.stringify({ content: chunk })}\n\n`);
       }
     } else if (backendMode === 'openai') {
       // Use OpenAI
-      for await (const chunk of streamChat({ customerId, message, chunks, includeGeneralAI })) {
+      for await (const chunk of streamChat({ customerId, message, chunks, includeGeneralAI, explanationComplexity })) {
         res.write(`data: ${JSON.stringify({ content: chunk })}\n\n`);
       }
     } else {

@@ -43,6 +43,10 @@
         code:not(pre code) {
             color: #374151;
         }
+        /* Domain code styling - ensure visibility */
+        .bg-gray-50 code {
+            color: #1f2937 !important;
+        }
     </style>
 </head>
 <body class="bg-gray-900 min-h-screen">
@@ -365,6 +369,16 @@
                     </label>
                     <p class="text-xs text-gray-500 mt-1">When enabled, the chatbot can use its general knowledge in addition to your uploaded documents to provide more comprehensive answers.</p>
                 </div>
+                
+                <!-- Backend Status Indicator -->
+                <div class="mb-4 p-3 bg-white border border-gray-200 rounded-lg">
+                    <div class="flex items-center space-x-2 mb-1">
+                        <span class="text-sm font-medium text-gray-700">Backend Mode:</span>
+                        <span id="backendStatus" class="text-sm font-semibold px-2 py-1 rounded-full bg-gray-200 text-gray-700">Checking...</span>
+                    </div>
+                    <p id="backendDescription" class="text-xs text-gray-500">Backend mode will be determined when you select a customer.</p>
+                </div>
+                
                 <button onclick="sendChat()" 
                     class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700">Send</button>
                 <div id="chatResponse" class="mt-6 p-4 bg-gray-50 rounded-md hidden">
@@ -1138,6 +1152,43 @@
             }
         }
 
+        async function updateExplanationSettings(customerId) {
+            const complexity = document.getElementById(`complexity-${customerId}`).value;
+            const allowSelection = document.getElementById(`allow-selection-${customerId}`).checked;
+            const systemPrompt = document.getElementById(`system-prompt-${customerId}`).value.trim();
+            
+            try {
+                const response = await apiCall(`/api/customers/${customerId}/explanation-settings`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        explanationComplexity: complexity,
+                        allowComplexitySelection: allowSelection,
+                        systemPrompt: systemPrompt || null
+                    })
+                });
+                
+                if (response.ok) {
+                    console.log(`Explanation settings updated for customer ${customerId}: complexity=${complexity}, allowSelection=${allowSelection}`);
+                    // Brief success indication
+                    setTimeout(() => {
+                        const button = document.querySelector(`#complexity-${customerId}`);
+                        if (button) {
+                            const originalBorder = button.style.borderColor;
+                            button.style.borderColor = '#10b981';
+                            setTimeout(() => button.style.borderColor = originalBorder, 2000);
+                        }
+                    }, 100);
+                } else {
+                    const error = await response.json();
+                    alert('Failed to update explanation settings: ' + error.error);
+                }
+            } catch (err) {
+                console.error('Error updating explanation settings:', err);
+                alert('Error updating explanation settings');
+            }
+        }
+
         async function loadOllamaStatus() {
             try {
                 const response = await apiCall('/api/config/ollama-status');
@@ -1436,40 +1487,94 @@
                             </div>
                             
                             <div id="resources-${customer.customerId}" class="hidden border-t border-gray-200">
-                                <div class="p-4 space-y-3">
-                                    <h4 class="font-semibold text-gray-700 mb-2">Allowed Domains</h4>
-                                    <div class="mb-4">
-                                        <div id="domains-${customer.customerId}" class="space-y-2 mb-3">
-                                            <!-- Domains will be loaded here -->
+                                <div class="p-4 space-y-6">
+                                    <!-- Allowed Domains Section -->
+                                    <div class="bg-blue-50 border border-blue-100 rounded-lg p-4">
+                                        <h4 class="font-semibold text-blue-800 mb-3 flex items-center">
+                                            🌐 Allowed Domains
+                                        </h4>
+                                        <div class="mb-4">
+                                            <div id="domains-${customer.customerId}" class="space-y-2 mb-3">
+                                                <!-- Domains will be loaded here -->
+                                            </div>
+                                            <div class="flex space-x-2">
+                                                <input type="text" id="domain-input-${customer.customerId}" 
+                                                    placeholder="https://example.com" 
+                                                    class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500">
+                                                <button onclick="addDomain('${customer.customerId}')" 
+                                                    class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+                                                    Add Domain
+                                                </button>
+                                            </div>
+                                            <p class="text-xs text-blue-600 mt-1">Use * for wildcard ports, e.g., http://localhost:*</p>
                                         </div>
-                                        <div class="flex space-x-2">
-                                            <input type="text" id="domain-input-${customer.customerId}" 
-                                                placeholder="https://example.com" 
-                                                class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500">
-                                            <button onclick="addDomain('${customer.customerId}')" 
-                                                class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
-                                                Add Domain
-                                            </button>
-                                        </div>
-                                        <p class="text-xs text-gray-500 mt-1">Use * for wildcard ports, e.g., http://localhost:*</p>
                                     </div>
                                     
-                                    <h4 class="font-semibold text-gray-700 mb-2">Resources</h4>
-                                    ${customer.resources.map(resource => `
-                                        <div class="flex justify-between items-center p-3 bg-white border border-gray-100 rounded">
-                                            <div class="flex-1">
-                                                <div class="font-medium">${resource.fileName}</div>
-                                                <div class="text-sm text-gray-600">
-                                                    ${resource.mime} • ${resource.chunkCount} chunks • ${formatISODate(resource.uploadedAt)}
-                                                </div>
-                                            </div>
-                                            <button onclick="deleteResource(${resource.id})" 
-                                                class="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700">
-                                                Delete
-                                            </button>
+                                    <!-- Explanation Settings Section -->
+                                    <div class="bg-purple-50 border border-purple-100 rounded-lg p-4">
+                                        <h4 class="font-semibold text-purple-800 mb-3 flex items-center">
+                                            🎓 Explanation Settings
+                                        </h4>
+                                        <div class="mb-3">
+                                            <label class="block text-sm font-medium text-purple-700 mb-1">Default Explanation Complexity</label>
+                                            <select id="complexity-${customer.customerId}" 
+                                                onchange="updateExplanationSettings('${customer.customerId}')"
+                                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500">
+                                                <option value="advanced" ${customer.explanationComplexity === 'advanced' ? 'selected' : ''}>🎓 Advanced (Professional level)</option>
+                                                <option value="simple" ${customer.explanationComplexity === 'simple' ? 'selected' : ''}>🧠 Simple (14+ reading level)</option>
+                                            </select>
                                         </div>
-                                    `).join('')}
-                                    ${customer.resources.length === 0 ? '<p class="text-gray-500 text-center py-4">No resources found</p>' : ''}
+                                        <div class="flex items-center">
+                                            <input type="checkbox" id="allow-selection-${customer.customerId}" 
+                                                ${customer.allowComplexitySelection ? 'checked' : ''} 
+                                                onchange="updateExplanationSettings('${customer.customerId}')"
+                                                class="mr-2 text-primary-600 focus:ring-primary-500">
+                                            <label for="allow-selection-${customer.customerId}" class="text-sm text-purple-700">
+                                                Allow users to choose explanation complexity in widget
+                                            </label>
+                                        </div>
+                                        <p class="text-xs text-purple-600 mt-2">When enabled, users will see a toggle in the chat widget to switch between simple and advanced explanations.</p>
+                                    </div>
+                                    
+                                    <!-- System Prompt Section -->
+                                    <div class="bg-green-50 border border-green-100 rounded-lg p-4">
+                                        <h4 class="font-semibold text-green-800 mb-3 flex items-center">
+                                            🤖 System Prompt
+                                        </h4>
+                                        <div class="mb-3">
+                                            <label class="block text-sm font-medium text-green-700 mb-1">Custom System Role (Optional)</label>
+                                            <textarea id="system-prompt-${customer.customerId}" 
+                                                rows="3"
+                                                placeholder="Example: You are a rocket scientist, explaining succinctly every concept. Use technical precision while remaining accessible."
+                                                onchange="updateExplanationSettings('${customer.customerId}')"
+                                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500">${customer.systemPrompt || ''}</textarea>
+                                        </div>
+                                        <p class="text-xs text-green-600">This custom prompt will be added to the background instructions for this customer's chatbot. Leave empty to use default behavior.</p>
+                                    </div>
+                                    
+                                    <!-- Resources Section -->
+                                    <div class="bg-orange-50 border border-orange-100 rounded-lg p-4">
+                                        <h4 class="font-semibold text-orange-800 mb-3 flex items-center">
+                                            📄 Resources
+                                        </h4>
+                                        <div class="space-y-2">
+                                            ${customer.resources.map(resource => `
+                                                <div class="flex justify-between items-center p-3 bg-white border border-orange-200 rounded">
+                                                    <div class="flex-1">
+                                                        <div class="font-medium text-gray-900">${resource.fileName}</div>
+                                                        <div class="text-sm text-gray-600">
+                                                            ${resource.mime} • ${resource.chunkCount} chunks • ${formatISODate(resource.uploadedAt)}
+                                                        </div>
+                                                    </div>
+                                                    <button onclick="deleteResource(${resource.id})" 
+                                                        class="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700">
+                                                        Delete
+                                                    </button>
+                                                </div>
+                                            `).join('')}
+                                            ${customer.resources.length === 0 ? '<p class="text-orange-600 text-center py-4">No resources found</p>' : ''}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1506,7 +1611,7 @@
                 if (data.domains && data.domains.length > 0) {
                     domainsDiv.innerHTML = data.domains.map(domain => `
                         <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
-                            <code class="text-sm">${domain}</code>
+                            <code class="text-sm text-gray-800">${domain}</code>
                             <button onclick="removeDomain('${customerId}', '${domain}')" 
                                 class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">
                                 Remove
@@ -1663,6 +1768,11 @@
         function updateBackendStatus(backend) {
             const statusElement = document.getElementById('backendStatus');
             const descriptionElement = document.getElementById('backendDescription');
+            
+            // Check if elements exist before updating
+            if (!statusElement || !descriptionElement) {
+                return;
+            }
             
             switch (backend) {
                 case 'openai':

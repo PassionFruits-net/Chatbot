@@ -43,6 +43,8 @@ db.exec(`
     customerId TEXT UNIQUE NOT NULL,
     name TEXT,
     openaiEnabled BOOLEAN DEFAULT TRUE,
+    explanationComplexity TEXT DEFAULT 'advanced' CHECK (explanationComplexity IN ('simple', 'advanced')),
+    allowComplexitySelection BOOLEAN DEFAULT FALSE,
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
     updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
   );
@@ -52,5 +54,18 @@ db.exec(`
   -- Insert default settings if they don't exist
   INSERT OR IGNORE INTO settings (key, value) VALUES ('openai_enabled_globally', 'true');
 `);
+
+// Add new columns if they don't exist (migration)
+try {
+  db.exec(`ALTER TABLE customers ADD COLUMN explanationComplexity TEXT DEFAULT 'advanced' CHECK (explanationComplexity IN ('simple', 'advanced'))`);
+} catch (e) {
+  // Column already exists
+}
+
+try {
+  db.exec(`ALTER TABLE customers ADD COLUMN allowComplexitySelection BOOLEAN DEFAULT FALSE`);
+} catch (e) {
+  // Column already exists
+}
 
 export default db;
