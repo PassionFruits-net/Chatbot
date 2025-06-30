@@ -174,7 +174,7 @@ router.post('/:customerId/explanation-settings', authMiddleware, (req: Request, 
     }
     
     // Validate systemPrompt
-    if (systemPrompt !== undefined && typeof systemPrompt !== 'string') {
+    if (systemPrompt !== undefined && systemPrompt !== null && typeof systemPrompt !== 'string') {
       return res.status(400).json({ error: 'System prompt must be a string' });
     }
     
