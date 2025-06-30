@@ -18,9 +18,55 @@ export interface ChatMessage {
   explanationComplexity?: string;
 }
 
+// Simple language detection based on common words and patterns
+function detectLanguage(text: string): 'norwegian' | 'english' {
+  const normalizedText = text.toLowerCase();
+  
+  // Norwegian indicators (common words and patterns)
+  const norwegianIndicators = [
+    'hva', 'hvem', 'hvor', 'når', 'hvorfor', 'hvordan', 'kan', 'vil', 'skal', 'må',
+    'jeg', 'du', 'han', 'hun', 'vi', 'dere', 'de', 'seg', 'min', 'din', 'sin',
+    'og', 'eller', 'men', 'for', 'til', 'av', 'med', 'på', 'i', 'om', 'under',
+    'forsikring', 'reise', 'bil', 'hus', 'hjem', 'dekker', 'vilkår', 'skade',
+    'ø', 'å', 'æ' // Norwegian characters
+  ];
+  
+  // English indicators
+  const englishIndicators = [
+    'what', 'who', 'where', 'when', 'why', 'how', 'can', 'will', 'shall', 'must',
+    'i', 'you', 'he', 'she', 'we', 'they', 'my', 'your', 'his', 'her', 'our',
+    'and', 'or', 'but', 'for', 'to', 'of', 'with', 'on', 'in', 'about', 'under',
+    'insurance', 'travel', 'car', 'house', 'home', 'covers', 'terms', 'claim',
+    'the', 'this', 'that', 'these', 'those'
+  ];
+  
+  let norwegianScore = 0;
+  let englishScore = 0;
+  
+  // Check for Norwegian indicators
+  for (const indicator of norwegianIndicators) {
+    if (normalizedText.includes(indicator)) {
+      norwegianScore += indicator.length === 1 ? 2 : 1; // Give more weight to Norwegian characters
+    }
+  }
+  
+  // Check for English indicators
+  for (const indicator of englishIndicators) {
+    if (normalizedText.includes(indicator)) {
+      englishScore += 1;
+    }
+  }
+  
+  // Default to Norwegian for NorskForsikring if unclear
+  return norwegianScore >= englishScore ? 'norwegian' : 'english';
+}
+
 export async function* streamChat(params: ChatMessage) {
   const includeGeneralAI = params.includeGeneralAI || false;
   const explanationComplexity = params.explanationComplexity || 'advanced';
+  
+  // Detect the language of the user's message
+  const detectedLanguage = detectLanguage(params.message);
   
   // Create complexity-specific formatting instructions
   const complexityInstructions = explanationComplexity === 'simple' 
@@ -47,17 +93,24 @@ export async function* streamChat(params: ChatMessage) {
   const customerRow = db.prepare('SELECT systemPrompt FROM customers WHERE customerId = ?').get(params.customerId) as { systemPrompt: string | null } | undefined;
   const customSystemPrompt = customerRow?.systemPrompt;
   
+  // Create language-specific instruction
+  const languageInstruction = detectedLanguage === 'english' 
+    ? `\n\nIMPORTANT: The user asked in English, so respond in English.`
+    : params.customerId === 'NorskForsikring' 
+      ? `\n\nIMPORTANT: Respond in Norwegian (norsk) as this is for Norwegian customers.`
+      : '';
+
   let basePrompt;
   if (customSystemPrompt) {
     // Use custom system prompt with document context
     basePrompt = includeGeneralAI 
-      ? `${customSystemPrompt} You can use both the information from <docs></docs> (customer's documents) and your general knowledge to provide comprehensive answers. Prioritize customer documents when they contain relevant information, but supplement with your general knowledge when needed. Do NOT include citations in your response - the sources will be shown separately.`
-      : `${customSystemPrompt} Answer ONLY with the information inside <docs></docs>. If the answer isn't there, reply "I don't have that information". Do NOT include any citations or source references in your response - the sources will be shown separately.`;
+      ? `${customSystemPrompt}${languageInstruction} You can use both the information from <docs></docs> (customer's documents) and your general knowledge to provide comprehensive answers. Prioritize customer documents when they contain relevant information, but supplement with your general knowledge when needed. Do NOT include citations in your response - the sources will be shown separately.`
+      : `${customSystemPrompt}${languageInstruction} Answer ONLY with the information inside <docs></docs>. If the answer isn't there, reply "I don't have that information". Do NOT include any citations or source references in your response - the sources will be shown separately.`;
   } else {
     // Use default system prompt
     basePrompt = includeGeneralAI 
-      ? `You are an assistant for CUSTOMER ${params.customerId}. You can use both the information from <docs></docs> (customer's documents) and your general knowledge to provide comprehensive answers. Prioritize customer documents when they contain relevant information, but supplement with your general knowledge when needed. Do NOT include citations in your response - the sources will be shown separately.`
-      : `You are an assistant for CUSTOMER ${params.customerId}. Answer ONLY with the information inside <docs></docs>. If the answer isn't there, reply "I don't have that information". Do NOT include any citations or source references in your response - the sources will be shown separately.`;
+      ? `You are an assistant for CUSTOMER ${params.customerId}.${languageInstruction} You can use both the information from <docs></docs> (customer's documents) and your general knowledge to provide comprehensive answers. Prioritize customer documents when they contain relevant information, but supplement with your general knowledge when needed. Do NOT include citations in your response - the sources will be shown separately.`
+      : `You are an assistant for CUSTOMER ${params.customerId}.${languageInstruction} Answer ONLY with the information inside <docs></docs>. If the answer isn't there, reply "I don't have that information". Do NOT include any citations or source references in your response - the sources will be shown separately.`;
   }
   
   const systemPrompt = basePrompt + complexityInstructions;
