@@ -8,6 +8,7 @@
     const brandColor = config.brandColor || '#a855f7';
     const assistantLabel = config.assistantLabel || 'Assistant';
     const welcomeMessage = config.welcomeMessage || 'Hello! How can I help you today?';
+    const simpleModeLabel = config.simpleModeLabel || 'Simple explanations';
     
     if (!customerId) {
         console.error('RAG-Lite: data-customer attribute or chatbotConfig.botId is required');
@@ -24,7 +25,7 @@
             
             <div id="rag-chat" style="display: none; position: absolute; bottom: 80px; right: 0; width: 350px; height: 600px; background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden; transition: all 0.3s ease;">
                 <div style="background: ${brandColor}; color: white; padding: 12px 16px; font-weight: 600; display: flex; align-items: center; height: 56px;">
-                    <img src="${customLogo || new URL(script.src).origin + '/logo.png'}" alt="Logo" style="height: 24px; width: auto; margin-right: 8px;">
+                    ${customLogo ? `<img src="${customLogo}" alt="Logo" style="height: 24px; width: auto; margin-right: 8px;">` : ''}
                     ${assistantLabel}
                     <div style="margin-left: auto; display: flex; gap: 8px; align-items: center;">
                         <button id="rag-fullscreen" style="background: none; border: none; color: white; cursor: pointer; padding: 4px; display: flex; align-items: center;" title="Toggle fullscreen">
@@ -46,7 +47,7 @@
                     <div id="rag-complexity-selector" style="display: none; margin-bottom: 12px; font-size: 14px;">
                         <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
                             <input type="checkbox" id="rag-simple-mode" style="margin: 0;">
-                            <span>Simple explanations</span>
+                            <span>${simpleModeLabel}</span>
                         </label>
                     </div>
                     <div style="display: flex; gap: 8px;">
