@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Norsk Forsikring - Test Page</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #ffffff;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            background-color: #072364;
+            padding: 20px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo img {
+            height: 50px;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+        }
+
+        .nav-menu a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 400;
+            transition: color 0.3s;
+        }
+
+        .nav-menu a:hover {
+            color: #47D1F5;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #072364 0%, #0a3a8f 100%);
+            color: white;
+            padding: 80px 0;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 36px;
+            font-weight: 400;
+            margin-bottom: 20px;
+        }
+
+        .hero p {
+            font-size: 18px;
+            margin-bottom: 30px;
+        }
+
+        .cta-button {
+            background-color: #47D1F5;
+            color: #072364;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .cta-button:hover {
+            background-color: #3bb8dc;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 60px 0;
+            background-color: #f8f9fa;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background-color: #47D1F5;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+
+        .feature-card h3 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #072364;
+        }
+
+        /* Footer */
+        .footer {
+            background-color: #072364;
+            color: white;
+            padding: 40px 0;
+            text-align: center;
+        }
+
+        .footer p {
+            font-size: 14px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-menu {
+                display: none;
+            }
+
+            .hero h1 {
+                font-size: 28px;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <img src="https://www.norskforsikring.no/wp-content/uploads/2024/01/logo_NF.jpg" alt="Norsk Forsikring">
+                </div>
+                <nav>
+                    <ul class="nav-menu">
+                        <li><a href="#privat">Privat</a></li>
+                        <li><a href="#bedrift">Bedrift</a></li>
+                        <li><a href="#om-oss">Om oss</a></li>
+                        <li><a href="#kontakt">Kontakt</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1>Velkommen til Norsk Forsikring</h1>
+            <p>Vi hjelper deg med å finne riktig forsikring for dine behov</p>
+            <a href="#chat" class="cta-button">Start en samtale</a>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <section class="main-content">
+        <div class="container">
+            <h2 style="text-align: center; font-size: 30px; margin-bottom: 20px; color: #072364;">Våre tjenester</h2>
+            <div class="features">
+                <div class="feature-card">
+                    <div class="feature-icon">🏠</div>
+                    <h3>Boligforsikring</h3>
+                    <p>Beskytt ditt hjem og dine eiendeler med vår omfattende boligforsikring.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🚗</div>
+                    <h3>Bilforsikring</h3>
+                    <p>Kjør trygt med vår fleksible bilforsikring tilpasset dine behov.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👨‍👩‍👧‍👦</div>
+                    <h3>Livsforsikring</h3>
+                    <p>Sikre din families fremtid med vår omfattende livsforsikring.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Norsk Forsikring - Test Page. Alle rettigheter reservert.</p>
+        </div>
+    </footer>
+
+    <!-- Chatbot Widget -->
+    <script>
+        window.chatbotConfig = {
+            botId: 'NorskForsikring',
+            position: 'bottom-right',
+            brandColor: '#072364',
+            logoUrl: 'https://www.norskforsikring.no/wp-content/uploads/2024/01/logo_NF.jpg',
+            assistantLabel: 'assistent',
+            welcomeMessage: 'Velkommen til en chat med Norsk Forsikring. Hva kan jeg hjelpe deg med i dag?',
+            chatStarted: false
+        };
+    </script>
+    <script src="/widget.js"></script>
+</body>
+</html>

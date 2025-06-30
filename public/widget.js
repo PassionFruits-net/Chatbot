@@ -1,25 +1,31 @@
 (function() {
     const script = document.currentScript;
-    const customerId = script.getAttribute('data-customer');
-    const customLogo = script.getAttribute('data-logo');
+    const customerId = script.getAttribute('data-customer') || window.chatbotConfig?.botId;
+    const customLogo = script.getAttribute('data-logo') || window.chatbotConfig?.logoUrl;
+    
+    // Get configuration from window.chatbotConfig or defaults
+    const config = window.chatbotConfig || {};
+    const brandColor = config.brandColor || '#a855f7';
+    const assistantLabel = config.assistantLabel || 'Assistant';
+    const welcomeMessage = config.welcomeMessage || 'Hello! How can I help you today?';
     
     if (!customerId) {
-        console.error('RAG-Lite: data-customer attribute is required');
+        console.error('RAG-Lite: data-customer attribute or chatbotConfig.botId is required');
         return;
     }
 
     const widgetHTML = `
         <div id="rag-widget" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;" class="rag-widget">
-            <button id="rag-toggle" style="width: 60px; height: 60px; border-radius: 50%; background: #a855f7; color: white; border: none; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center;">
+            <button id="rag-toggle" style="width: 60px; height: 60px; border-radius: 50%; background: ${brandColor}; color: white; border: none; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center;">
                 <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
                 </svg>
             </button>
             
             <div id="rag-chat" style="display: none; position: absolute; bottom: 80px; right: 0; width: 350px; height: 600px; background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden; transition: all 0.3s ease;">
-                <div style="background: #a855f7; color: white; padding: 12px 16px; font-weight: 600; display: flex; align-items: center; height: 56px;">
+                <div style="background: ${brandColor}; color: white; padding: 12px 16px; font-weight: 600; display: flex; align-items: center; height: 56px;">
                     <img src="${customLogo || new URL(script.src).origin + '/logo.png'}" alt="Logo" style="height: 24px; width: auto; margin-right: 8px;">
-                    Assistant
+                    ${assistantLabel}
                     <div style="margin-left: auto; display: flex; gap: 8px; align-items: center;">
                         <button id="rag-fullscreen" style="background: none; border: none; color: white; cursor: pointer; padding: 4px; display: flex; align-items: center;" title="Toggle fullscreen">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -32,7 +38,7 @@
                 
                 <div id="rag-messages" style="height: calc(100% - 156px); overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
                     <div style="background: #f3f4f6; padding: 12px; border-radius: 8px; max-width: 80%;">
-                        Hello! How can I help you today?
+                        ${welcomeMessage}
                     </div>
                 </div>
                 
@@ -46,7 +52,7 @@
                     <div style="display: flex; gap: 8px;">
                         <input id="rag-input" type="text" placeholder="Type your message..." 
                             style="flex: 1; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px; outline: none; focus: border-color: #2563eb;">
-                        <button id="rag-send" style="padding: 8px 16px; background: #a855f7; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                        <button id="rag-send" style="padding: 8px 16px; background: ${brandColor}; color: white; border: none; border-radius: 8px; cursor: pointer;">
                             Send
                         </button>
                     </div>
@@ -62,13 +68,15 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
         #rag-toggle:hover {
-            background: #7c3aed !important;
+            background: ${brandColor} !important;
+            filter: brightness(0.9);
         }
         #rag-send:hover {
-            background: #7c3aed !important;
+            background: ${brandColor} !important;
+            filter: brightness(0.9);
         }
         #rag-input:focus {
-            border-color: #a855f7 !important;
+            border-color: ${brandColor} !important;
         }
         .rag-user-msg {
             background: #2563eb !important;
