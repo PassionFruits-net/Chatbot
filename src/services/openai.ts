@@ -68,26 +68,42 @@ export async function* streamChat(params: ChatMessage) {
   // Detect the language of the user's message
   const detectedLanguage = detectLanguage(params.message);
   
-  // Create complexity-specific formatting instructions
+  // Create complexity-specific formatting instructions (language-aware)
+  const isNorwegian = detectedLanguage === 'norwegian' || params.customerId === 'NorskForsikring';
+  
   const complexityInstructions = explanationComplexity === 'simple' 
     ? `
 
-**IMPORTANT FORMATTING REQUIREMENTS:**
+**VIKTIGE FORMATERING KRAV${isNorwegian ? '' : ' / IMPORTANT FORMATTING REQUIREMENTS'}:**
+${isNorwegian ? `
+- Bruk enkelt språk som passer for en 14-åring
+- Del teksten inn i korte avsnitt (2-3 setninger hver)
+- Bruk **fet tekst** for å fremheve nøkkelpunkter
+- Inkluder relevante emojis for visuell effekt (📚 for læring, 💡 for ideer, ⚠️ for advarsler, osv.)
+- Forklar fagbegreper med enkle ord
+- Bruk punktlister eller nummererte lister når det er nyttig
+- Hold setningene korte og klare` : `
 - Use simple language suitable for a 14-year-old reading level
 - Break text into short paragraphs (2-3 sentences each)
 - Use **bold text** to highlight key points
 - Include relevant emojis for visual effect (📚 for learning, 💡 for ideas, ⚠️ for warnings, etc.)
 - Explain technical terms in simple words
 - Use bullet points or numbered lists when helpful
-- Keep sentences short and clear`
+- Keep sentences short and clear`}`
     : `
 
-**IMPORTANT FORMATTING REQUIREMENTS:**
+**VIKTIGE FORMATERING KRAV${isNorwegian ? '' : ' / IMPORTANT FORMATTING REQUIREMENTS'}:**
+${isNorwegian ? `
+- Strukturer svaret ditt med klare avsnitt
+- Bruk **fet tekst** for å fremheve viktige konsepter og nøkkelord
+- Inkluder relevante emojis for å forbedre lesbarheten (📊 for data, 🔧 for teknisk, 💡 for innsikt, osv.)
+- Bruk punktlister eller nummererte lister for klarhet når det er hensiktsmessig
+- Oppretthold en profesjonell men engasjerende tone` : `
 - Structure your response with clear paragraphs
 - Use **bold text** to emphasize important concepts and key terms
 - Include relevant emojis to enhance readability (📊 for data, 🔧 for technical, 💡 for insights, etc.)
 - Use bullet points or numbered lists for clarity when appropriate
-- Maintain professional but engaging tone`;
+- Maintain professional but engaging tone`}`;
 
   // Get customer's custom system prompt
   const customerRow = db.prepare('SELECT systemPrompt FROM customers WHERE customerId = ?').get(params.customerId) as { systemPrompt: string | null } | undefined;
