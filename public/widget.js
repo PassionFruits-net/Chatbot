@@ -2,12 +2,16 @@
     const script = document.currentScript;
     const customerId = script.getAttribute('data-customer') || window.chatbotConfig?.botId;
     const customLogo = script.getAttribute('data-logo') || window.chatbotConfig?.logoUrl;
+    const customColor = script.getAttribute('data-color');
+    const customGreeting = script.getAttribute('data-greeting');
+    const customPosition = script.getAttribute('data-position');
     
     // Get configuration from window.chatbotConfig or defaults
     const config = window.chatbotConfig || {};
-    const brandColor = config.brandColor || '#a855f7';
+    const brandColor = customColor || config.brandColor || '#a855f7';
     const assistantLabel = config.assistantLabel || 'Assistant';
-    const welcomeMessage = config.welcomeMessage || 'Hello! How can I help you today?';
+    const welcomeMessage = customGreeting || config.welcomeMessage || 'Hello! How can I help you today?';
+    const position = customPosition || 'bottom-right';
     const simpleModeLabel = config.simpleModeLabel || 'Simple explanations';
     const inputPlaceholder = config.inputPlaceholder || 'Type your message...';
     const sendLabel = config.sendLabel || 'Send';
@@ -18,8 +22,16 @@
         return;
     }
 
+    // Calculate position styles
+    const positionStyles = {
+        'bottom-right': 'bottom: 20px; right: 20px;',
+        'bottom-left': 'bottom: 20px; left: 20px;',
+        'top-right': 'top: 20px; right: 20px;',
+        'top-left': 'top: 20px; left: 20px;'
+    };
+
     const widgetHTML = `
-        <div id="rag-widget" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;" class="rag-widget">
+        <div id="rag-widget" style="position: fixed; ${positionStyles[position] || positionStyles['bottom-right']} z-index: 1000;" class="rag-widget">
             <button id="rag-toggle" style="width: 60px; height: 60px; border-radius: 50%; background: ${brandColor}; color: white; border: none; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center;">
                 <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
@@ -170,14 +182,43 @@
 
     // Simple markdown parser for headers, bold and italic
     function parseMarkdown(text) {
-        return text
+        // First handle headers
+        let html = text
             .replace(/### (.+)/g, '<h3 style="font-size: 1.1em; font-weight: 600; margin: 12px 0 8px 0; color: #374151;">$1</h3>')
             .replace(/## (.+)/g, '<h2 style="font-size: 1.2em; font-weight: 600; margin: 14px 0 10px 0; color: #374151;">$1</h2>')
             .replace(/# (.+)/g, '<h1 style="font-size: 1.3em; font-weight: 700; margin: 16px 0 12px 0; color: #374151;">$1</h1>')
             .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*(.+?)\*/g, '<em>$1</em>')
-            .replace(/\n\n/g, '</p><p>')
-            .replace(/\n/g, '<br>');
+            .replace(/\*(.+?)\*/g, '<em>$1</em>');
+        
+        // Split into paragraphs, but preserve headers
+        const lines = html.split('\n');
+        let result = '';
+        let currentParagraph = '';
+        
+        for (let line of lines) {
+            line = line.trim();
+            if (!line) {
+                if (currentParagraph) {
+                    result += `<p style="margin: 8px 0;">${currentParagraph}</p>`;
+                    currentParagraph = '';
+                }
+            } else if (line.startsWith('<h')) {
+                if (currentParagraph) {
+                    result += `<p style="margin: 8px 0;">${currentParagraph}</p>`;
+                    currentParagraph = '';
+                }
+                result += line;
+            } else {
+                if (currentParagraph) currentParagraph += '<br>';
+                currentParagraph += line;
+            }
+        }
+        
+        if (currentParagraph) {
+            result += `<p style="margin: 8px 0;">${currentParagraph}</p>`;
+        }
+        
+        return result;
     }
 
     toggle.onclick = () => chat.style.display = 'block';
@@ -259,7 +300,7 @@
                             const data = JSON.parse(line.slice(6));
                             if (data.content) {
                                 accumulatedContent += data.content;
-                                contentDiv.innerHTML = '<p>' + parseMarkdown(accumulatedContent) + '</p>';
+                                contentDiv.innerHTML = parseMarkdown(accumulatedContent);
                             }
                             if (data.sources) {
                                 const uniqueSources = data.sources.reduce((acc, source) => {
