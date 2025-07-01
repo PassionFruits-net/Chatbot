@@ -20,6 +20,8 @@ scp -i $SSH_KEY src/routes/customers.ts $SERVER:$REMOTE_BUILD_DIR/src/routes/
 # Copy public files
 scp -i $SSH_KEY public/admin/dashboard.html $SERVER:$REMOTE_BUILD_DIR/public/admin/
 scp -i $SSH_KEY public/lifepower.html $SERVER:$REMOTE_BUILD_DIR/public/
+scp -i $SSH_KEY public/widget.js $SERVER:$REMOTE_BUILD_DIR/public/
+scp -i $SSH_KEY public/lifepower-logo.svg $SERVER:$REMOTE_BUILD_DIR/public/
 
 # Copy SQL scripts
 scp -i $SSH_KEY create_lifepower_customer.sql $SERVER:$REMOTE_BUILD_DIR/

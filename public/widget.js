@@ -5,11 +5,12 @@
     const customColor = script.getAttribute('data-color');
     const customGreeting = script.getAttribute('data-greeting');
     const customPosition = script.getAttribute('data-position');
+    const customTitle = script.getAttribute('data-title');
     
     // Get configuration from window.chatbotConfig or defaults
     const config = window.chatbotConfig || {};
     const brandColor = customColor || config.brandColor || '#a855f7';
-    const assistantLabel = config.assistantLabel || 'Assistant';
+    const assistantLabel = customTitle || config.assistantLabel || 'Assistant';
     const welcomeMessage = customGreeting || config.welcomeMessage || 'Hello! How can I help you today?';
     const position = customPosition || 'bottom-right';
     const simpleModeLabel = config.simpleModeLabel || 'Simple explanations';

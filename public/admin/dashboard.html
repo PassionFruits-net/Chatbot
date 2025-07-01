@@ -432,6 +432,10 @@
                         
                         <p class="text-gray-700 mb-4">You can customize the widget appearance and behavior with these optional attributes:</p>
                         
+                        <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded">
+                            <p class="text-blue-800 text-sm"><strong>💡 Alternative:</strong> You can also configure the widget using JavaScript by setting <code>window.chatbotConfig</code> before loading the widget script. Example: <code>window.chatbotConfig = {brandColor: '#1863DC', assistantLabel: 'Helper'};</code></p>
+                        </div>
+                        
                         <div class="bg-gray-900 p-4 rounded-lg overflow-x-auto">
                             <pre class="text-white"><code class="text-white">&lt;script 
   src="https://chat.passionfruits.net/widget.js" 
@@ -439,6 +443,7 @@
   data-logo="https://your-website.com/logo.png"
   data-position="bottom-left"
   data-color="#9333ea"
+  data-title="Helper"
   data-greeting="Hi! How can I help you today?"
   defer
 &gt;&lt;/script&gt;</code></pre>
@@ -456,6 +461,10 @@
                             <div class="flex items-start space-x-3">
                                 <span class="font-mono text-sm bg-gray-100 px-2 py-1 rounded">data-color</span>
                                 <span class="text-sm text-gray-600">Custom color for the chat bubble (hex color code)</span>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <span class="font-mono text-sm bg-gray-100 px-2 py-1 rounded">data-title</span>
+                                <span class="text-sm text-gray-600">Custom title for the chat header (e.g., "Helper", "Support", "Assistant")</span>
                             </div>
                             <div class="flex items-start space-x-3">
                                 <span class="font-mono text-sm bg-gray-100 px-2 py-1 rounded">data-greeting</span>
@@ -1486,6 +1495,13 @@
                                             <span class="text-gray-600">OpenAI</span>
                                         </label>
                                     </div>
+                                    ${customer.demoPageUrl ? `
+                                        <a href="${customer.demoPageUrl}" target="_blank" onclick="event.stopPropagation();" 
+                                           class="px-3 py-1 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition-colors" 
+                                           title="Visit demo page">
+                                            🚀 Demo
+                                        </a>
+                                    ` : ''}
                                     <button onclick="event.stopPropagation(); deleteCustomer('${customer.customerId}')" 
                                         class="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700">
                                         Delete All
