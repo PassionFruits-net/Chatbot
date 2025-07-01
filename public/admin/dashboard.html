@@ -1466,12 +1466,10 @@
                                         <div>
                                             <div class="flex items-center space-x-2">
                                                 <h3 class="font-semibold text-lg">${customer.customerId}</h3>
-                                                ${customer.demoPageUrl ? `
-                                                    <a href="${customer.demoPageUrl}" target="_blank" onclick="event.stopPropagation();" class="text-indigo-600 hover:text-indigo-800 text-sm px-2 py-1 bg-indigo-100 rounded-md hover:bg-indigo-200 transition-colors">🌐 Demo</a>
-                                                    <button onclick="event.stopPropagation(); editDemoPageUrl('${customer.customerId}', '${customer.demoPageUrl || ''}')" class="ml-1 text-gray-500 hover:text-indigo-600 text-sm" title="Edit demo page URL">✏️</button>
-                                                ` : `
-                                                    <button onclick="event.stopPropagation(); editDemoPageUrl('${customer.customerId}', '')" class="text-gray-500 hover:text-indigo-600 text-sm px-2 py-1 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors" title="Add demo page URL">➕ Demo</button>
-                                                `}
+                                                ${customer.demoPageUrl ? 
+                                                    '<a href="' + customer.demoPageUrl + '" target="_blank" onclick="event.stopPropagation();" class="text-indigo-600 hover:text-indigo-800 text-sm px-2 py-1 bg-indigo-100 rounded-md hover:bg-indigo-200 transition-colors">🌐 Demo</a>' +
+                                                    '<button onclick="event.stopPropagation(); editDemoPageUrl(\'' + customer.customerId + '\', \'' + (customer.demoPageUrl || '') + '\')" class="ml-1 text-gray-500 hover:text-indigo-600 text-sm" title="Edit demo page URL">✏️</button>' :
+                                                    '<button onclick="event.stopPropagation(); editDemoPageUrl(\'' + customer.customerId + '\', \'\')" class="text-gray-500 hover:text-indigo-600 text-sm px-2 py-1 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors" title="Add demo page URL">➕ Demo</button>'}
                                             </div>
                                             <p class="text-sm text-gray-600">
                                                 ${customer.resourceCount} resources • ${customer.chunkCount.toLocaleString()} chunks • $${customer.totalCost.toFixed(4)} cost
@@ -1495,13 +1493,10 @@
                                             <span class="text-gray-600">OpenAI</span>
                                         </label>
                                     </div>
-                                    ${customer.demoPageUrl ? `
-                                        <a href="${customer.demoPageUrl}" target="_blank" onclick="event.stopPropagation();" 
-                                           class="px-3 py-1 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition-colors" 
-                                           title="Visit demo page">
-                                            🚀 Demo
-                                        </a>
-                                    ` : ''}
+                                    ${customer.demoPageUrl ? 
+                                        '<a href="' + customer.demoPageUrl + '" target="_blank" onclick="event.stopPropagation();" ' +
+                                        'class="px-3 py-1 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition-colors" ' +
+                                        'title="Visit demo page">🚀 Demo</a>' : ''}
                                     <button onclick="event.stopPropagation(); deleteCustomer('${customer.customerId}')" 
                                         class="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700">
                                         Delete All
