@@ -20,7 +20,8 @@ router.get('/overview', authMiddleware, (req: Request, res: Response) => {
         COALESCE(cust.openaiEnabled, 1) as openaiEnabled,
         COALESCE(cust.explanationComplexity, 'advanced') as explanationComplexity,
         COALESCE(cust.allowComplexitySelection, 0) as allowComplexitySelection,
-        cust.systemPrompt as systemPrompt
+        cust.systemPrompt as systemPrompt,
+        cust.demoPageUrl as demoPageUrl
       FROM customers cust
       LEFT JOIN resources r ON cust.customerId = r.customerId
       LEFT JOIN chunks c ON r.id = c.resourceId
@@ -32,7 +33,7 @@ router.get('/overview', authMiddleware, (req: Request, res: Response) => {
         FROM usage_tracking 
         GROUP BY customerId
       ) u ON cust.customerId = u.customerId
-      GROUP BY cust.customerId, cust.name, cust.openaiEnabled, cust.explanationComplexity, cust.allowComplexitySelection, cust.systemPrompt
+      GROUP BY cust.customerId, cust.name, cust.openaiEnabled, cust.explanationComplexity, cust.allowComplexitySelection, cust.systemPrompt, cust.demoPageUrl
       ORDER BY cust.customerId
     `).all();
 
@@ -161,7 +162,7 @@ router.post('/:customerId/domains', authMiddleware, (req: Request, res: Response
 router.post('/:customerId/explanation-settings', authMiddleware, (req: Request, res: Response) => {
   try {
     const { customerId } = req.params;
-    const { explanationComplexity, allowComplexitySelection, systemPrompt } = req.body;
+    const { explanationComplexity, allowComplexitySelection, systemPrompt, demoPageUrl } = req.body;
     
     // Validate explanationComplexity
     if (explanationComplexity && !['simple', 'advanced'].includes(explanationComplexity)) {
@@ -176,6 +177,11 @@ router.post('/:customerId/explanation-settings', authMiddleware, (req: Request, 
     // Validate systemPrompt
     if (systemPrompt !== undefined && systemPrompt !== null && typeof systemPrompt !== 'string') {
       return res.status(400).json({ error: 'System prompt must be a string' });
+    }
+    
+    // Validate demoPageUrl
+    if (demoPageUrl !== undefined && demoPageUrl !== null && typeof demoPageUrl !== 'string') {
+      return res.status(400).json({ error: 'Demo page URL must be a string' });
     }
     
     const updateFields = [];
@@ -195,6 +201,11 @@ router.post('/:customerId/explanation-settings', authMiddleware, (req: Request, 
     if (systemPrompt !== undefined) {
       updateFields.push('systemPrompt = ?');
       params.push(systemPrompt || null);
+    }
+    
+    if (demoPageUrl !== undefined) {
+      updateFields.push('demoPageUrl = ?');
+      params.push(demoPageUrl || null);
     }
     
     if (updateFields.length === 0) {

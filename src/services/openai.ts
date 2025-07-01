@@ -118,10 +118,17 @@ ${isNorwegian ? `
 
   let basePrompt;
   if (customSystemPrompt) {
-    // Use custom system prompt with document context
-    basePrompt = includeGeneralAI 
-      ? `${customSystemPrompt}${languageInstruction} You can use both the information from <docs></docs> (customer's documents) and your general knowledge to provide comprehensive answers. Prioritize customer documents when they contain relevant information, but supplement with your general knowledge when needed. Do NOT include citations in your response - the sources will be shown separately.`
-      : `${customSystemPrompt}${languageInstruction} Answer ONLY with the information inside <docs></docs>. If the answer isn't there, reply "I don't have that information". Do NOT include any citations or source references in your response - the sources will be shown separately.`;
+    // Use custom system prompt - don't add English instructions if prompt is in Norwegian
+    const isNorwegianPrompt = customSystemPrompt.includes('norsk') || customSystemPrompt.includes('Du er');
+    if (isNorwegianPrompt) {
+      // For Norwegian prompts, don't add English document instructions
+      basePrompt = customSystemPrompt + languageInstruction;
+    } else {
+      // For other prompts, add document context in English
+      basePrompt = includeGeneralAI 
+        ? `${customSystemPrompt}${languageInstruction} You can use both the information from <docs></docs> (customer's documents) and your general knowledge to provide comprehensive answers. Prioritize customer documents when they contain relevant information, but supplement with your general knowledge when needed. Do NOT include citations in your response - the sources will be shown separately.`
+        : `${customSystemPrompt}${languageInstruction} Answer ONLY with the information inside <docs></docs>. If the answer isn't there, reply "I don't have that information". Do NOT include any citations or source references in your response - the sources will be shown separately.`;
+    }
   } else {
     // Use default system prompt
     basePrompt = includeGeneralAI 

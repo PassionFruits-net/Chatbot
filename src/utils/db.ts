@@ -68,4 +68,10 @@ try {
   // Column already exists
 }
 
+try {
+  db.exec(`ALTER TABLE customers ADD COLUMN demoPageUrl TEXT`);
+} catch (e) {
+  // Column already exists
+}
+
 export default db;

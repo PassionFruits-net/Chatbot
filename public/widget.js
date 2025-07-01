@@ -9,6 +9,9 @@
     const assistantLabel = config.assistantLabel || 'Assistant';
     const welcomeMessage = config.welcomeMessage || 'Hello! How can I help you today?';
     const simpleModeLabel = config.simpleModeLabel || 'Simple explanations';
+    const inputPlaceholder = config.inputPlaceholder || 'Type your message...';
+    const sendLabel = config.sendLabel || 'Send';
+    const thinkingLabel = config.thinkingLabel || 'Thinking...';
     
     if (!customerId) {
         console.error('RAG-Lite: data-customer attribute or chatbotConfig.botId is required');
@@ -51,10 +54,10 @@
                         </label>
                     </div>
                     <div style="display: flex; gap: 8px;">
-                        <input id="rag-input" type="text" placeholder="Type your message..." 
+                        <input id="rag-input" type="text" placeholder="${inputPlaceholder}" 
                             style="flex: 1; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px; outline: none; focus: border-color: #2563eb;">
                         <button id="rag-send" style="padding: 8px 16px; background: ${brandColor}; color: white; border: none; border-radius: 8px; cursor: pointer;">
-                            Send
+                            ${sendLabel}
                         </button>
                     </div>
                 </div>
@@ -165,9 +168,12 @@
     // Initialize settings
     loadCustomerSettings();
 
-    // Simple markdown parser for bold and italic
+    // Simple markdown parser for headers, bold and italic
     function parseMarkdown(text) {
         return text
+            .replace(/### (.+)/g, '<h3 style="font-size: 1.1em; font-weight: 600; margin: 12px 0 8px 0; color: #374151;">$1</h3>')
+            .replace(/## (.+)/g, '<h2 style="font-size: 1.2em; font-weight: 600; margin: 14px 0 10px 0; color: #374151;">$1</h2>')
+            .replace(/# (.+)/g, '<h1 style="font-size: 1.3em; font-weight: 700; margin: 16px 0 12px 0; color: #374151;">$1</h1>')
             .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
             .replace(/\*(.+?)\*/g, '<em>$1</em>')
             .replace(/\n\n/g, '</p><p>')
@@ -201,7 +207,7 @@
         const botMsgId = 'bot-' + Date.now();
         messages.innerHTML += `
             <div id="${botMsgId}" class="rag-bot-msg" style="background: #f3f4f6; padding: 12px; border-radius: 8px; max-width: 80%; align-self: flex-start;">
-                <div class="rag-content">Thinking...</div>
+                <div class="rag-content">${thinkingLabel}</div>
                 <div class="rag-sources"></div>
             </div>
         `;
