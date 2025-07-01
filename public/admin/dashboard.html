@@ -1457,7 +1457,12 @@
                                         <div>
                                             <div class="flex items-center space-x-2">
                                                 <h3 class="font-semibold text-lg">${customer.customerId}</h3>
-                                                ${customer.demoPageUrl ? `<a href="${customer.demoPageUrl}" target="_blank" onclick="event.stopPropagation();" class="text-indigo-600 hover:text-indigo-800 text-sm px-2 py-1 bg-indigo-100 rounded-md hover:bg-indigo-200 transition-colors">🌐 Demo</a>` : ''}
+                                                ${customer.demoPageUrl ? `
+                                                    <a href="${customer.demoPageUrl}" target="_blank" onclick="event.stopPropagation();" class="text-indigo-600 hover:text-indigo-800 text-sm px-2 py-1 bg-indigo-100 rounded-md hover:bg-indigo-200 transition-colors">🌐 Demo</a>
+                                                    <button onclick="event.stopPropagation(); editDemoPageUrl('${customer.customerId}', '${customer.demoPageUrl || ''}')" class="ml-1 text-gray-500 hover:text-indigo-600 text-sm" title="Edit demo page URL">✏️</button>
+                                                ` : `
+                                                    <button onclick="event.stopPropagation(); editDemoPageUrl('${customer.customerId}', '')" class="text-gray-500 hover:text-indigo-600 text-sm px-2 py-1 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors" title="Add demo page URL">➕ Demo</button>
+                                                `}
                                             </div>
                                             <p class="text-sm text-gray-600">
                                                 ${customer.resourceCount} resources • ${customer.chunkCount.toLocaleString()} chunks • $${customer.totalCost.toFixed(4)} cost
@@ -1869,6 +1874,60 @@
             // Initial check
             setTimeout(checkBackendStatus, 500);
         });
+
+        // Demo page URL editing function
+        function editDemoPageUrl(customerId, currentUrl) {
+            const newUrl = prompt('Enter demo page URL for ' + customerId + ':', currentUrl || '');
+            
+            if (newUrl !== null) { // User didn't cancel
+                updateExplanationSettingsWithData(customerId, {
+                    demoPageUrl: newUrl.trim() || null
+                });
+            }
+        }
+
+        // Modified updateExplanationSettings to accept optional override data
+        async function updateExplanationSettingsWithData(customerId, overrideData = {}) {
+            const complexity = overrideData.explanationComplexity || document.getElementById(`complexity-${customerId}`).value;
+            const allowSelection = overrideData.allowComplexitySelection !== undefined ? overrideData.allowComplexitySelection : document.getElementById(`allow-selection-${customerId}`).checked;
+            const systemPrompt = overrideData.systemPrompt !== undefined ? overrideData.systemPrompt : document.getElementById(`system-prompt-${customerId}`).value.trim();
+            const demoPageUrl = overrideData.demoPageUrl !== undefined ? overrideData.demoPageUrl : document.getElementById(`demo-page-${customerId}`).value.trim();
+            
+            try {
+                const response = await apiCall(`/api/customers/${customerId}/explanation-settings`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        explanationComplexity: complexity,
+                        allowComplexitySelection: allowSelection,
+                        systemPrompt: systemPrompt || null,
+                        demoPageUrl: demoPageUrl || null
+                    })
+                });
+                
+                if (response.ok) {
+                    console.log(`Settings updated for customer ${customerId}`);
+                    // Refresh the customer overview to show updated data
+                    loadCustomersOverview();
+                    
+                    // Brief success indication
+                    setTimeout(() => {
+                        const button = document.querySelector(`#complexity-${customerId}`);
+                        if (button) {
+                            const originalBorder = button.style.borderColor;
+                            button.style.borderColor = '#10b981';
+                            setTimeout(() => button.style.borderColor = originalBorder, 2000);
+                        }
+                    }, 100);
+                } else {
+                    const error = await response.json();
+                    alert('Failed to update settings: ' + error.error);
+                }
+            } catch (err) {
+                console.error('Error updating settings:', err);
+                alert('Error updating settings');
+            }
+        }
     </script>
 </body>
 </html>

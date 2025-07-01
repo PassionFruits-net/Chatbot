@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LifePower Library - Achieve Personal Power in All Realms of Life</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            background: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2c5530;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #2c5530;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #2c5530 0%, #4a7c59 100%);
+            color: white;
+            padding: 4rem 0;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto 2rem;
+            opacity: 0.9;
+        }
+
+        /* Language Selector */
+        .language-selector {
+            text-align: center;
+            padding: 2rem 0;
+            background: white;
+        }
+
+        .language-selector h3 {
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .language-flags {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .language-flag {
+            padding: 0.5rem 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .language-flag:hover,
+        .language-flag.active {
+            border-color: #2c5530;
+            background: #2c5530;
+            color: white;
+        }
+
+        /* Book Library */
+        .library-section {
+            padding: 4rem 0;
+            background: white;
+        }
+
+        .library-section h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            color: #2c5530;
+        }
+
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .book-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .book-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .book-image {
+            height: 300px;
+            background: linear-gradient(135deg, #2c5530, #4a7c59);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .book-info {
+            padding: 1.5rem;
+        }
+
+        .book-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #2c5530;
+        }
+
+        .book-language {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .book-price {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #2c5530;
+            margin-bottom: 1rem;
+        }
+
+        .buy-button {
+            width: 100%;
+            background: #2c5530;
+            color: white;
+            border: none;
+            padding: 0.8rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .buy-button:hover {
+            background: #1e3a21;
+        }
+
+        /* Author Section */
+        .author-section {
+            background: #f8f9fa;
+            padding: 4rem 0;
+        }
+
+        .author-content {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 3rem;
+            align-items: center;
+        }
+
+        .author-image {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2c5530, #4a7c59);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .author-text h3 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #2c5530;
+        }
+
+        .author-text p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+
+        /* Footer */
+        footer {
+            background: #2c5530;
+            color: white;
+            padding: 3rem 0;
+            text-align: center;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h4 {
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .footer-section p,
+        .footer-section a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .footer-section a:hover {
+            color: white;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .social-link {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+
+        .social-link:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .author-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .author-image {
+                justify-self: center;
+            }
+
+            .nav-links {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="container">
+            <div class="logo">LifePower</div>
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#library">Library</a></li>
+                <li><a href="#coaches">Coaches</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h1>The LifePower Library</h1>
+            <p>Discover transformative books that will help you achieve personal power in all realms of life. Our comprehensive library offers wisdom and practical guidance for your journey to self-mastery.</p>
+        </div>
+    </section>
+
+    <section class="language-selector">
+        <div class="container">
+            <h3>Choose Your Language</h3>
+            <div class="language-flags">
+                <a href="#english" class="language-flag active">🇺🇸 English</a>
+                <a href="#russian" class="language-flag">🇷🇺 Русский</a>
+                <a href="#latvian" class="language-flag">🇱🇻 Latviešu</a>
+                <a href="#hebrew" class="language-flag">🇮🇱 עברית</a>
+                <a href="#german" class="language-flag">🇩🇪 Deutsch</a>
+                <a href="#spanish" class="language-flag">🇪🇸 Español</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="library-section" id="library">
+        <div class="container">
+            <h2>Our Book Collection</h2>
+            <div class="books-grid">
+                <div class="book-card">
+                    <div class="book-image">
+                        LifePower English Book V7
+                    </div>
+                    <div class="book-info">
+                        <div class="book-title">LifePower: The Complete Guide</div>
+                        <div class="book-language">English Edition</div>
+                        <div class="book-price">$29.99</div>
+                        <button class="buy-button">Add to Cart</button>
+                    </div>
+                </div>
+
+                <div class="book-card">
+                    <div class="book-image">
+                        ExecFree ENG V3
+                    </div>
+                    <div class="book-info">
+                        <div class="book-title">Executive Freedom</div>
+                        <div class="book-language">English Edition</div>
+                        <div class="book-price">$24.99</div>
+                        <button class="buy-button">Add to Cart</button>
+                    </div>
+                </div>
+
+                <div class="book-card">
+                    <div class="book-image">
+                        CCM USA V4
+                    </div>
+                    <div class="book-info">
+                        <div class="book-title">Creative Consciousness Method</div>
+                        <div class="book-language">English Edition</div>
+                        <div class="book-price">$19.99</div>
+                        <button class="buy-button">Add to Cart</button>
+                    </div>
+                </div>
+
+                <div class="book-card">
+                    <div class="book-image">
+                        Study Essentials USA
+                    </div>
+                    <div class="book-info">
+                        <div class="book-title">Study Essentials</div>
+                        <div class="book-language">English Edition</div>
+                        <div class="book-price">$16.99</div>
+                        <button class="buy-button">Add to Cart</button>
+                    </div>
+                </div>
+
+                <div class="book-card">
+                    <div class="book-image">
+                        LifePower Русский
+                    </div>
+                    <div class="book-info">
+                        <div class="book-title">LifePower: Полное Руководство</div>
+                        <div class="book-language">Russian Edition</div>
+                        <div class="book-price">$29.99</div>
+                        <button class="buy-button">Add to Cart</button>
+                    </div>
+                </div>
+
+                <div class="book-card">
+                    <div class="book-image">
+                        LifePower עברית
+                    </div>
+                    <div class="book-info">
+                        <div class="book-title">LifePower: המדריך המלא</div>
+                        <div class="book-language">Hebrew Edition</div>
+                        <div class="book-price">$29.99</div>
+                        <button class="buy-button">Add to Cart</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="author-section">
+        <div class="container">
+            <div class="author-content">
+                <div class="author-image">
+                    Dani Lemberger
+                </div>
+                <div class="author-text">
+                    <h3>About Dani Lemberger</h3>
+                    <p>Dani Lemberger is a renowned author, life coach, and philosopher dedicated to helping individuals achieve personal power in all realms of life. With over two decades of experience in personal development, Dani has guided thousands of people on their journey to self-mastery.</p>
+                    <p>His unique approach combines ancient wisdom with modern psychology, creating practical frameworks that can be applied in everyday life. Through the LifePower methodology, Dani has revolutionized how people approach personal growth and achievement.</p>
+                    <p>The LifePower Library represents years of research, experience, and insight into what it truly takes to live a powerful, meaningful, and successful life.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Contact Information</h4>
+                    <p>Email: info@lifepower.com</p>
+                    <p>Phone: +1 (555) 123-4567</p>
+                    <p>Address: 123 Wisdom Street, Growth City, GC 12345</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <a href="#home">Home</a>
+                    <a href="#about">About</a>
+                    <a href="#library">Library</a>
+                    <a href="#coaches">Coaches</a>
+                    <a href="#contact">Contact</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <a href="#faq">FAQ</a>
+                    <a href="#shipping">Shipping Info</a>
+                    <a href="#returns">Returns</a>
+                    <a href="#privacy">Privacy Policy</a>
+                </div>
+            </div>
+            <div class="social-links">
+                <a href="#facebook" class="social-link">📘</a>
+                <a href="#twitter" class="social-link">🐦</a>
+                <a href="#instagram" class="social-link">📷</a>
+                <a href="#linkedin" class="social-link">💼</a>
+                <a href="#youtube" class="social-link">📺</a>
+            </div>
+            <p style="margin-top: 2rem; opacity: 0.8;">&copy; 2024 LifePower. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Passion Fruits Chatbot Widget -->
+    <script 
+        src="https://chat.passionfruits.net/widget.js" 
+        data-customer="LifePower"
+        data-greeting="Hi! I'm here to help you explore our personal development library. Ask me about our books, authors, or any questions about achieving personal power!"
+        data-position="bottom-right"
+        data-color="#2c5530"
+        defer>
+    </script>
+</body>
+</html>
